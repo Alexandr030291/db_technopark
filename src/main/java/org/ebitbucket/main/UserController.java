@@ -1,21 +1,40 @@
-package org.ebitbucket.model;
+package org.ebitbucket.main;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.ebitbucket.services.User;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 public class UserController {
+    private final User user;
+
+    public UserController(User user) {
+        this.user = user;
+    }
 
     @RequestMapping(path="api/user/create/", method = RequestMethod.POST)
-    public ResponseEntity user(@RequestBody RegistRequest body){
+    public Result<String> userCreate(@RequestBody RegistRequest body){
+        final String username = body.getUsername();
+        final String about = body.getAbout();
+        final String name = body.getName();
+        final String email= body.getEmail();
+        final Boolean isAnonymous = body.getAnonymous();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("`{\"code\": ${code}, \"response\": error message}");
+        if (StringUtils.isEmpty(username)) return Result.invalidReques();
+        if (StringUtils.isEmpty(name)) return Result.invalidReques();
+        if (StringUtils.isEmpty(email)) return Result.invalidReques();
+
+        user.create(email, name, username, about, isAnonymous);
+        return Result.ok("");
+   }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public Result<String> userAlreadyExists(DuplicateKeyException ex) {
+        return Result.userAlreadyExists();
     }
 
     private  static final class RegistRequest {
