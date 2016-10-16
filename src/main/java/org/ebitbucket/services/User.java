@@ -7,10 +7,22 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Service
 public class User {
-    JdbcTemplate template;
+    private JdbcTemplate template;
+    private StringBuilder userCreated;
 
     public User(JdbcTemplate template) {
         this.template = template;
+        this.userCreated.
+                append("CREATE TABLE technopark.User\n").
+                append("(\n").
+                append("\tid INT PRIMARY KEY AUTO_INCREMENT,\n").
+                append("\temail VARCHAR(50) CHARACTER SET 'utf8' NOT NULL,\n").
+                append("\tname VARCHAR(50) CHARACTER SET 'utf8',\n").
+                append("\tusername VARCHAR(50) CHARACTER SET 'utf8',\n").
+                append("\tabout VARCHAR(50) CHARACTER SET 'utf8',\n").
+                append("\tisAnonymous BOOLEAN\n").
+                append(");\n").
+                append("CREATE UNIQUE INDEX table_name_email_uindex ON technopark.table_name (email);");
     }
 
     public int create(String email,String name,String username,String about,Boolean isAnonymous){
@@ -24,4 +36,7 @@ public class User {
         }
     }
 
+    public StringBuilder getUserCreated() {
+        return userCreated;
+    }
 }
