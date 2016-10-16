@@ -7,6 +7,8 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import static org.ebitbucket.main.Result.invalidReques;
+
 
 @RestController
 public class UserController {
@@ -17,35 +19,33 @@ public class UserController {
     }
 
     @RequestMapping(path="api/user/create/", method = RequestMethod.POST)
-    public Result<String> userCreate(@RequestBody RegistRequest body){
+    public Object userCreate(@RequestBody CreateRequest body){
         final String username = body.getUsername();
         final String about = body.getAbout();
         final String name = body.getName();
         final String email= body.getEmail();
         final Boolean isAnonymous = body.getAnonymous();
 
-        if (StringUtils.isEmpty(username)) return Result.invalidReques();
-        if (StringUtils.isEmpty(name)) return Result.invalidReques();
         if (StringUtils.isEmpty(email)) return Result.invalidReques();
 
-        user.create(email, name, username, about, isAnonymous);
-        return Result.ok("");
+        final Integer id = user.create(email, name, username, about, isAnonymous);
+        if (id == -1) return Result.userAlreadyExists();
+
+        body.setId(id);
+
+        return Result.ok(body);
    }
 
-    @ExceptionHandler(DuplicateKeyException.class)
-    public Result<String> userAlreadyExists(DuplicateKeyException ex) {
-        return Result.userAlreadyExists();
-    }
-
-    private  static final class RegistRequest {
+    private  static final class CreateRequest {
         private Boolean isAnonymous;
         private String username;
         private String about;
         private String name;
         private String email;
+        private Integer id;
 
         @JsonCreator
-        private RegistRequest(@JsonProperty("username") String username,
+        private CreateRequest(@JsonProperty("username") String username,
                               @JsonProperty("about") String about,
                               @JsonProperty("name") String name,
                               @JsonProperty("email") String email,
@@ -54,6 +54,7 @@ public class UserController {
             this.about = about;
             this.name = name;
             this.email = email;
+            this.id = -1;
 
             if (isAnonymous != null) {
                 this.isAnonymous = isAnonymous;
@@ -81,5 +82,14 @@ public class UserController {
         public Boolean getAnonymous() {
             return isAnonymous;
         }
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
     }
+
 }
