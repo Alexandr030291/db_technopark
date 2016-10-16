@@ -22,7 +22,7 @@ public class User {
                 append("\tabout VARCHAR(50) CHARACTER SET 'utf8',\n").
                 append("\tisAnonymous BOOLEAN\n").
                 append(");\n").
-                append("CREATE UNIQUE INDEX table_name_email_uindex ON technopark.table_name (email);");
+                append("CREATE UNIQUE INDEX User_email_uindex ON technopark.User (email);");
     }
 
     public int create(String email,String name,String username,String about,Boolean isAnonymous){
