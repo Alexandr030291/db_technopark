@@ -1,4 +1,4 @@
-package org.ebitbucket.main;
+package org.ebitbucket.model.User;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

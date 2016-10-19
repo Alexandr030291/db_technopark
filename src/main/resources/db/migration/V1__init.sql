@@ -54,3 +54,19 @@ CREATE TABLE Thread
 
   isDelete BOOLEAN
 );
+
+CREATE TABLE Subscriptions
+(
+  user VARCHAR(50) NOT NULL,
+  CONSTRAINT Subscriptions_User_email_fk FOREIGN KEY (user) REFERENCES User(email),
+  thread INT NOT NULL,
+  CONSTRAINT Subscriptions_Thread_id_fk FOREIGN KEY (thread) REFERENCES Thread(id)
+);
+
+CREATE TABLE Followers
+(
+  id INT NOT NULL,
+  CONSTRAINT Followers_User_id_fk FOREIGN KEY (id) REFERENCES User (id),
+  followee VARCHAR(50) NOT NULL,
+  CONSTRAINT Followers_User_email_fk FOREIGN KEY (followee) REFERENCES User (email)
+);

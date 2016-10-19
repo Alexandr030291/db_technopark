@@ -1,13 +1,12 @@
 package org.ebitbucket.services;
 
+import org.ebitbucket.model.User.UserDetail;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -23,29 +22,28 @@ public class UserService {
 		try {
 			String sql = "INSERT INTO User(email, name, user_name, about, isAnonymous) VALUE(?,?,?,?,?)";
 			template.update(sql, email, name, username, about, isAnonymous);
-			return template.queryForObject("SELECT id FROM User where email =?", Integer.class, email);
+			sql = "SELECT id FROM User where email =?";
+			return template.queryForObject(sql, Integer.class, email);
 		} catch (DuplicateKeyException dk) {
 			return -1;
 		}
 	}
 
-	public HashMap<String, String> profil(String email) {
-		HashMap<String, String> result = new HashMap<>();
+	public UserDetail profil(String email) {
 		String sql = "SELECT * FROM User WHERE email = ?";
-		template.queryForMap(sql, result, email);
-		return result;
+        return template.queryForObject(sql, UserDetail.class, email);
 	}
 
 	public List<String> following(String email) {
 		List<String> result = new ArrayList<>();
-		String sql = "SELECT email FROM User JOIN Following ON Following.parent=User.id AND Following.user = ?";
+		String sql = "SELECT email FROM User JOIN Followers ON Following.id=User.id AND User.email = ?";
 		template.queryForList(sql, result, email);
 		return result;
 	}
 
 	public List<String> followers(String email) {
 		List<String> result = new ArrayList<>();
-		String sql = "SELECT email FROM User JOIN Followers ON Followers.parent=User.id AND Followers.user = ?";
+		String sql = "SELECT email FROM User JOIN Followers ON Followers.id=User.id AND Followers.followee = ?";
 		template.queryForList(sql, result, email);
 		return result;
 	}
@@ -56,4 +54,11 @@ public class UserService {
 		template.queryForList(sql, result, email);
 		return result;
 	}
+
+    public void addFollowers(Integer id,String followee){
+        String sql = "INSERT INTO Followers(id, followee) VALUE (?,?)";
+        template.update(sql, id, followee);
+    }
+
+
 }
