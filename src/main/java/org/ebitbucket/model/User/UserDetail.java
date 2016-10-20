@@ -1,5 +1,7 @@
 package org.ebitbucket.model.User;
 
+import java.util.List;
+
 public class UserDetail {
     private String username;
     private String about;
@@ -7,9 +9,9 @@ public class UserDetail {
     private String email;
     private Integer id;
     private Boolean isAnonymous;
-    private String[] followers;
-    private String[] following;
-    private Integer[] subscriptions;
+    private List<String> followers;
+    private List<String> following;
+    private List<Integer> subscriptions;
 
     public UserDetail(String username, String about, String name, String email, Integer id, Boolean isAnonymous) {
         this.username = username;
@@ -20,15 +22,23 @@ public class UserDetail {
         this.isAnonymous = isAnonymous;
     }
 
-    public void setFollowers(String[] followers) {
+    public void setAbout(String about) {
+        this.about = about;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setFollowers(List<String> followers) {
         this.followers = followers;
     }
 
-    public void setFollowing(String[] following) {
+    public void setFollowing(List<String> following) {
         this.following = following;
     }
 
-    public void setSubscriptions(Integer[] subscriptions) {
+    public void setSubscriptions(List<Integer> subscriptions) {
         this.subscriptions = subscriptions;
     }
 
@@ -56,15 +66,15 @@ public class UserDetail {
         return isAnonymous;
     }
 
-    public String[] getFollowers() {
+    public List<String> getFollowers() {
         return followers;
     }
 
-    public String[] getFollowing() {
+    public List<String> getFollowing() {
         return following;
     }
 
-    public Integer[] getSubscriptions() {
+    public List<Integer> getSubscriptions() {
         return subscriptions;
     }
 }
