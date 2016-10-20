@@ -1,0 +1,17 @@
+
+follower - подписчик
+followee - на кого он подписан
+followers - кто подписан на меня
+following - на кого подписан я
+
+Table Followers
+Id | followee
+
+Table User
+Id | email | ...
+
+User.Id = Followers.Id
+User.email = Followers.followee
+
+listFollowers WHERE Followers.followee=?
+listFollowing WHERE Followers.id = ?

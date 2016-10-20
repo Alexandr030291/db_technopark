@@ -58,17 +58,21 @@ CREATE TABLE `Thread`
 CREATE TABLE `Subscriptions`
 (
   `user` VARCHAR(50) NOT NULL,
-  CONSTRAINT `Subscriptions_User_email_fk` FOREIGN KEY (`user`) REFERENCES `User` (`email`),
   `thread` INT NOT NULL,
-  CONSTRAINT `Subscriptions_Thread_id_fk` FOREIGN KEY (`thread`) REFERENCES `Thread`(`id`),
-  UNIQUE (`user`,`thread`)
+  UNIQUE (`user`,`thread`),
+  FOREIGN KEY (`user`) REFERENCES `User` (`email`)
+  ON DELETE CASCADE,
+  FOREIGN KEY (`thread`) REFERENCES `Thread`(`id`)
+  ON DELETE CASCADE
 );
 
 CREATE TABLE `Followers`
 (
-  `id` INT NOT NULL,
-  CONSTRAINT `Followers_User_id_fk` FOREIGN KEY (`id`) REFERENCES `User` (`id`),
+  `follower` VARCHAR(50) NOT NULL,
   `followee` VARCHAR(50) NOT NULL,
-  CONSTRAINT `Followers_User_email_fk` FOREIGN KEY (`followee`) REFERENCES `User` (`email`),
-  UNIQUE(`id`, `followee`)
+  UNIQUE(`follower`, `followee`),
+  FOREIGN KEY (`follower`) REFERENCES `User` (`email`)
+  ON DELETE CASCADE,
+  FOREIGN KEY (`followee`) REFERENCES `User` (`email`)
+  ON DELETE CASCADE
 );

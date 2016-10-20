@@ -41,7 +41,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/details/?user", method = RequestMethod.GET)
-    public Result<?> userDetails(@RequestParam String email) {
+    public Result<?> userDetails(@RequestParam("email") String email) {
         UserDetail userDetail = user.profil(email);
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
@@ -57,7 +57,7 @@ final public class UserController {
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
-        user.addFollowers(userDetail.getId(), body.getFollowee());
+        user.addFollowers(body.getFollower(), body.getFollowee());
 
         updateUserDetail(userDetail);
 
@@ -70,7 +70,7 @@ final public class UserController {
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
-        if(user.delFollowers(userDetail.getId(),body.getFollowee())==0)
+        if(user.delFollowers(body.getFollower(),body.getFollowee())==0)
             return Result.invalidReques();
 
         updateUserDetail(userDetail);
@@ -84,11 +84,36 @@ final public class UserController {
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
-        user.update(body.getEmail(),body.getName(),body.getAbout());
+        user.updateProfil(body.getEmail(),body.getName(),body.getAbout());
         userDetail.setAbout(body.getAbout());
         userDetail.setName(body.getName());
 
         updateUserDetail(userDetail);
+
+        return Result.ok(userDetail);
+    }
+
+    @RequestMapping(path = "db/api/user/listFollowers", method = RequestMethod.GET)
+    public Result<?> listFollowers(
+            @RequestParam("email") String email,
+            @RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "order", required = false) String order,
+            @RequestParam(name = "since_id", required = false) Integer since_id
+            ){
+
+        String _order=(StringUtils.isEmpty(order))?"desc":order;
+        if(!"desc".equalsIgnoreCase(_order)&&!"asc".equalsIgnoreCase(_order))
+            return Result.incorrectRequest();
+        Integer _since_id = (since_id==null)?0:since_id;
+        Integer _limit = (limit == null)?0:limit;
+
+        UserDetail userDetail = user.profil(email);
+        if (StringUtils.isEmpty(userDetail.getEmail())) {
+            return Result.notFound();
+        }
+        userDetail.setFollowers(user.getListFollowers(email,_order,_since_id,_limit));
+        userDetail.setSubscriptions(user.subscriptions(userDetail.getEmail()));
+        userDetail.setFollowing(user.following(userDetail.getEmail()));
 
         return Result.ok(userDetail);
     }

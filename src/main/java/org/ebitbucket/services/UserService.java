@@ -36,14 +36,14 @@ public class UserService {
 
 	public List<String> following(String email) {
 		List<String> result = new ArrayList<>();
-		String sql = "SELECT `email` FROM `User` JOIN `Followers` ON `Following`.`id`=`User`.`id` AND `User`.`email` = ?;";
+		String sql = "SELECT `followee` FROM `Followers` WHERE `follower` = ?;";
 		template.queryForList(sql, result, email);
 		return result;
 	}
 
 	public List<String> followers(String email) {
 		List<String> result = new ArrayList<>();
-		String sql = "SELECT `email` FROM User JOIN `Followers` ON `Followers`.`id`=`User`.`id` AND `Followers`.`followee` = ?;";
+		String sql = "SELECT `follower` FROM `Followers` WHERE `followee` = ?;";
 		template.queryForList(sql, result, email);
 		return result;
 	}
@@ -55,23 +55,39 @@ public class UserService {
 		return result;
 	}
 
-    public int addFollowers(Integer id,String followee){
+    public int addFollowers(String follower,String followee){
         try {
-            String sql = "INSERT INTO `Followers`(`id`, `followee`) VALUE (?,?);";
-            template.update(sql, id, followee);
+            String sql = "INSERT INTO `Followers`(`follower`, `followee`) VALUE (?,?);";
+            template.update(sql, follower, followee);
             return 0;
         }catch (DuplicateKeyException dk){
             return 1;
         }
     }
 
-    public int delFollowers(Integer id, String followee){
-        String sql = "DELETE FROM `Followers` WHERE `id` = ? AND `followee` = ?;";
-        return template.update(sql,id,followee);
+    public int delFollowers(String follower, String followee){
+        String sql = "DELETE FROM `Followers` WHERE `follower` = ? AND `followee` = ?;";
+        return template.update(sql,follower,followee);
     }
 
-    public void update(String email, String name, String about){
+    public void updateProfil(String email, String name, String about){
         String sql =  "UPDATE `User` SET `name` = ?, `about` = ? WHERE `email` = ?;";
         template.update(sql,name,about,email);
+    }
+
+    public List<String> getListFollowers(String email, String order, Integer since_id, Integer limit){
+        List<String> result = new ArrayList<>();
+        String sql =    "SELECT `follower` " +
+                        "FROM `Followers` " +
+                        "JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
+                                    "AND `Followers`.`followee` = ?  " +
+                                    "AND `User`.`id` = ? " +
+                        "ORDER BY `USER`.`name` ?";
+        if(limit>0){
+            template.queryForList(sql+"LIMIT ?;",result,email,since_id,order,limit);
+        }else {
+            template.queryForList(sql+";", result, email,since_id,order);
+        }
+        return result;
     }
 }
