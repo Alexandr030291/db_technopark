@@ -90,4 +90,20 @@ public class UserService {
         }
         return result;
     }
+
+    public List<String> getListFollowing(String email, String order, Integer since_id, Integer limit){
+        List<String> result = new ArrayList<>();
+        String sql =    "SELECT `followee` " +
+                "FROM `Followers` " +
+                "JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
+                "AND `Followers`.`follower` = ?  " +
+                "AND `User`.`id` = ? " +
+                "ORDER BY `USER`.`name` ?";
+        if(limit>0){
+            template.queryForList(sql+"LIMIT ?;",result,email,since_id,order,limit);
+        }else {
+            template.queryForList(sql+";", result, email,since_id,order);
+        }
+        return result;
+    }
 }

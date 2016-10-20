@@ -118,6 +118,31 @@ final public class UserController {
         return Result.ok(userDetail);
     }
 
+    @RequestMapping(path = "db/api/user/listFollowing", method = RequestMethod.GET)
+    public Result<?> listFollowing(
+            @RequestParam("email") String email,
+            @RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "order", required = false) String order,
+            @RequestParam(name = "since_id", required = false) Integer since_id
+    ){
+
+        String _order=(StringUtils.isEmpty(order))?"desc":order;
+        if(!"desc".equalsIgnoreCase(_order)&&!"asc".equalsIgnoreCase(_order))
+            return Result.incorrectRequest();
+        Integer _since_id = (since_id==null)?0:since_id;
+        Integer _limit = (limit == null)?0:limit;
+
+        UserDetail userDetail = user.profil(email);
+        if (StringUtils.isEmpty(userDetail.getEmail())) {
+            return Result.notFound();
+        }
+        userDetail.setFollowing(user.getListFollowing(email,_order,_since_id,_limit));
+        userDetail.setSubscriptions(user.subscriptions(userDetail.getEmail()));
+        userDetail.setFollowers(user.followers(userDetail.getEmail()));
+
+        return Result.ok(userDetail);
+    }
+
     private void updateUserDetail(UserDetail userDetail){
         userDetail.setFollowers(user.followers(userDetail.getEmail()));
         userDetail.setFollowing(user.following(userDetail.getEmail()));
