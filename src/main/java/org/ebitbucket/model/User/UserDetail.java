@@ -62,7 +62,7 @@ public class UserDetail {
         return id;
     }
 
-    public Boolean getAnonymous() {
+    public Boolean getIsAnonymous() {
         return isAnonymous;
     }
 
