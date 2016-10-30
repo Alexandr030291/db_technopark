@@ -20,7 +20,7 @@ public class MainService {
         template.execute("TRUNCATE TABLE `Thread`;");
         template.execute("TRUNCATE TABLE `Post`;");
         template.execute("TRUNCATE TABLE `Followers`;");
-        template.execute("TRUNCATE TABLE `Subscription`;");
+        template.execute("TRUNCATE TABLE `Subscriptions`;");
         template.execute("SET FOREIGN_KEY_CHECKS = 1");
     }
 }
