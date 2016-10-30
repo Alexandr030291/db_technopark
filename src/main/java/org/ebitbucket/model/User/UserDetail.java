@@ -1,5 +1,8 @@
 package org.ebitbucket.model.User;
 
+import org.ebitbucket.services.UserService;
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import java.util.List;
 
 public class UserDetail {
@@ -20,6 +23,11 @@ public class UserDetail {
         this.email = email;
         this.id = id;
         this.isAnonymous = isAnonymous;
+
+        UserService userService = new UserService(new JdbcTemplate());
+        setFollowers(userService.followers(getEmail()));
+        setFollowing(userService.following(getEmail()));
+        setSubscriptions(userService.subscriptions(getEmail()));
     }
 
     public void setAbout(String about) {

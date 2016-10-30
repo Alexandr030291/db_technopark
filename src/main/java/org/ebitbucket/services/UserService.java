@@ -1,5 +1,6 @@
 package org.ebitbucket.services;
 
+import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.User.UserDetail;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -103,6 +104,40 @@ public class UserService {
             template.queryForList(sql+"LIMIT ?;",result,email,since_id,order,limit);
         }else {
             template.queryForList(sql+";", result, email,since_id,order);
+        }
+        return result;
+    }
+
+
+    public int getCount(){
+        String sql = "SELECT count(*) FROM `User`";
+        return template.queryForObject(sql, Integer.class);
+    }
+
+    public List<Integer> getListPost(String email, String order, String since, Integer limit){
+        String sql ="SELECT `id` " +
+                    "FROM `Post` " +
+                    "WHERE `user` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
+                    "ORDER BY `date`, ? ";
+        List<Integer> result = new ArrayList<>();
+        if(limit>0){
+            template.queryForList(sql+"LIMIT ?;",result,email,since,order,limit);
+        }else {
+            template.queryForList(sql+";", result, email,since,order);
+        }
+        return result;
+    }
+
+    public List<Integer> getListThread(String email, String order, String since, Integer limit){
+        String sql ="SELECT `id` FROM `Thread` " +
+                    "JOIN  `User` ON `Thread`.`user` = `User`.`email`"+
+                    "AND `User`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
+                    "ORDER BY `date`, ? ";
+        List<Integer> result = new ArrayList<>();
+        if(limit>0){
+            template.queryForList(sql+"LIMIT ?;",result,email,since,order,limit);
+        }else {
+            template.queryForList(sql+";", result, email,since,order);
         }
         return result;
     }
