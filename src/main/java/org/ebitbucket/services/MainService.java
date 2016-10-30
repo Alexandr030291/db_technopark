@@ -1,8 +1,12 @@
 package org.ebitbucket.services;
 
+import org.ebitbucket.main.Result;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Service
 @Transactional
@@ -22,5 +26,10 @@ public class MainService {
         template.execute("TRUNCATE TABLE `Followers`;");
         template.execute("TRUNCATE TABLE `Subscription`;");
         template.execute("SET FOREIGN_KEY_CHECKS = 1");
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity handleDataAccessException() {
+        return ResponseEntity.ok(Result.unkownError());
     }
 }

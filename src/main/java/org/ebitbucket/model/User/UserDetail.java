@@ -25,9 +25,9 @@ public class UserDetail {
         this.isAnonymous = isAnonymous;
 
         UserService userService = new UserService(new JdbcTemplate());
-        setFollowers(userService.followers(getEmail()));
-        setFollowing(userService.following(getEmail()));
-        setSubscriptions(userService.subscriptions(getEmail()));
+        setFollowers(userService.followers(this.email));
+        setFollowing(userService.following(this.email));
+        setSubscriptions(userService.subscriptions(this.email));
     }
 
     public void setAbout(String about) {
