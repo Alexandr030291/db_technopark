@@ -6,8 +6,11 @@ public class ForumDetail {
     private final String short_name;
     private Object userDetail;
 
-    public ForumDetail(String short_name) {
+    public ForumDetail(Integer id, String name, String short_name, Object userDetail) {
+        this.id = id;
+        this.name = name;
         this.short_name = short_name;
+        this.userDetail = userDetail;
     }
 
     public Integer getId() {

@@ -1,6 +1,7 @@
 package org.ebitbucket.main;
 
 import org.ebitbucket.services.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,18 +23,18 @@ public class MainController {
     }
 
     @RequestMapping(path = "db/api/clear", method = RequestMethod.POST)
-    public Result<String> clear() {
+    public ResponseEntity clear() {
         mainService.allClear();
-        return Result.ok("OK");
+        return ResponseEntity.ok().body(Result.ok());
     }
 
     @RequestMapping(path = "db/api/status", method = RequestMethod.GET)
-    public Result<?> status() {
+    public ResponseEntity status() {
         int user = userService.getCount();
         int thread = threadService.getCount();
         int forum = forumService.getCount();
         int post = postService.getCount();
-        return Result.ok(new StatusResponse(user,thread,forum,post));
+        return ResponseEntity.ok(Result.ok(new StatusResponse(user,thread,forum,post)));
     }
 
     private static final class StatusResponse {

@@ -4,10 +4,13 @@ import org.ebitbucket.model.Tread.ThreadDetail;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +61,7 @@ public class ThreadService {
 
     public ThreadDetail detail(Integer id){
         String sql="SELECT * FROM `Thread` WHERE `id` = ?;";
-       return template.queryForObject(sql,ThreadDetail.class,id);
+       return template.queryForObject(sql,THREAD_DETAIL_ROW_MAPPER,id);
     }
 
     public int getCountPost(Integer id){
@@ -154,4 +157,23 @@ public class ThreadService {
         String sql = "UPDATE `Thread` SET `message` = ?, `slug` = ? WHERE `id` = ?;";
         return template.update(sql,message,slug,id);
     }
+
+    private static final RowMapper<ThreadDetail> THREAD_DETAIL_ROW_MAPPER = new RowMapper<ThreadDetail>() {
+
+        @Override
+        public ThreadDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+            return new ThreadDetail(rs.getInt("id"),
+                    rs.getString("forum"),
+                    rs.getString("user"),
+                    rs.getString("title"),
+                    rs.getString("message"),
+                    rs.getString("slug"),
+                    rs.getString("date"),
+                    rs.getBoolean("isClosed"),
+                    rs.getBoolean("isDeleted"),
+                    rs.getInt("likes"),
+                    rs.getInt("dislikes"));
+        }
+    };
 }

@@ -18,16 +18,14 @@ import java.util.List;
 final public class ForumController{
     private ForumService forumService;
     private UserService userService;
-    private ThreadService threadService;
 
-    public ForumController(ForumService forumService, UserService userService, ThreadService threadService) {
+    public ForumController(ForumService forumService, UserService userService) {
         this.forumService = forumService;
         this.userService = userService;
-        this.threadService = threadService;
     }
 
     @RequestMapping(path = "db/api/forumService/create", method = RequestMethod.POST)
-    public Result<?> forumCreate(@RequestBody ForumRequest body){
+    public Result forumCreate(@RequestBody ForumRequest body){
         if (    StringUtils.isEmpty(body.getEmail())|
                 StringUtils.isEmpty(body.getName())|
                 StringUtils.isEmpty(body.getShort_name()))
@@ -43,7 +41,7 @@ final public class ForumController{
     }
 
     @RequestMapping(path = "db/api/forumService/details", method = RequestMethod.GET)
-    public Result<?> forumDetails(@RequestParam(name = "forumService") String short_name,
+    public Result forumDetails(@RequestParam(name = "forumService") String short_name,
                                   @RequestParam(name = "related", required = false) String[] related){
         if (StringUtils.isEmpty(short_name)) {
             return Result.invalidReques();

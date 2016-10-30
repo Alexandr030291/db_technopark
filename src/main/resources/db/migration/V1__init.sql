@@ -14,8 +14,8 @@ CREATE TABLE `Forum`
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   `short_name` VARCHAR(50) NOT NULL,
-  `userService` VARCHAR(50) NOT NULL,
-  FOREIGN KEY (`userService`) REFERENCES `User`(`email`)
+  `user` VARCHAR(50) NOT NULL,
+  FOREIGN KEY (`user`) REFERENCES `User`(`email`)
   ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX `Forum_name_uindex` ON `Forum` (`name`);
@@ -24,8 +24,8 @@ CREATE UNIQUE INDEX `Forum_short_name_uindex` ON `Forum` (`short_name`);
 CREATE TABLE `Post`
 (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
-  `forumService` VARCHAR(50) NOT NULL,
-  `userService` VARCHAR(50) NOT NULL,
+  `forum` VARCHAR(50) NOT NULL,
+  `user` VARCHAR(50) NOT NULL,
   `thread` INT,
   `message` TEXT,
   `date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -35,23 +35,23 @@ CREATE TABLE `Post`
   `isHighlighted` BOOLEAN,
   `isEdited` BOOLEAN,
   `isSpam` BOOLEAN,
-  `isDelete` BOOLEAN,
+  `isDeleted` BOOLEAN,
 
   likes INT NOT NULL DEFAULT 0,
   dislikes INT NOT NULL DEFAULT 0,
   mpath VARCHAR(255),
 
-  FOREIGN KEY (`userService`) REFERENCES `User` (`email`)
+  FOREIGN KEY (`user`) REFERENCES `User` (`email`)
   ON DELETE CASCADE,
-  FOREIGN KEY (`forumService`) REFERENCES `Forum` (`short_name`)
+  FOREIGN KEY (`forum`) REFERENCES `Forum` (`short_name`)
   ON DELETE CASCADE
 );
 
 CREATE TABLE `Thread`
 (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
-  `forumService` VARCHAR(50) NOT NULL,
-  `userService` VARCHAR(50) NOT NULL,
+  `forum` VARCHAR(50) NOT NULL,
+  `user` VARCHAR(50) NOT NULL,
   `title` VARCHAR(50),
   `message` TEXT,
   `slug` VARCHAR(50),
@@ -63,19 +63,19 @@ CREATE TABLE `Thread`
   likes INT NOT NULL DEFAULT 0,
   dislikes INT NOT NULL DEFAULT 0,
 
-  FOREIGN KEY (`userService`) REFERENCES `User` (`email`)
+  FOREIGN KEY (`user`) REFERENCES `User` (`email`)
   ON DELETE CASCADE,
-  FOREIGN KEY (`forumService`) REFERENCES `Forum` (`short_name`)
+  FOREIGN KEY (`forum`) REFERENCES `Forum` (`short_name`)
   ON DELETE CASCADE
 );
 
 CREATE TABLE `Subscriptions`
 (
-  `userService` VARCHAR(50) NOT NULL,
+  `user` VARCHAR(50) NOT NULL,
   `thread` INT NOT NULL,
-  UNIQUE (`userService`,`thread`),
+  UNIQUE (`user`,`thread`),
 
-  FOREIGN KEY (`userService`) REFERENCES `User` (`email`)
+  FOREIGN KEY (`user`) REFERENCES `User` (`email`)
   ON DELETE CASCADE,
   FOREIGN KEY (`thread`) REFERENCES `Thread`(`id`)
   ON DELETE CASCADE

@@ -2,9 +2,13 @@ package org.ebitbucket.services;
 
 import org.ebitbucket.model.Post.PostDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 @Service
 @Transactional
@@ -29,10 +33,9 @@ public class PostService {
                       Boolean isDeleted) {
         String sql;
         String mpath ="";
-
         if (parent!=null && parent>=0){
             sql = "SELECT `mpath` FROM `Post` WHERE `id` = ?;";
-            mpath = template.queryForObject(sql, String.class,parent);
+            mpath = template.queryForObject(sql, String.class, parent);
             int pow=max;
             for(int i= parent;i>0;i/=10){
                 pow--;
@@ -52,7 +55,7 @@ public class PostService {
 
     public PostDetails details(int id){
         String sql="SELECT * FROM `Post` WHERE `id` = ?";
-        return template.queryForObject(sql,PostDetails.class,id);
+        return template.queryForObject(sql,POST_DETAIL_ROW_MAPPER,id);
     };
 
     public int getCount(){
@@ -80,5 +83,25 @@ public class PostService {
         return template.update(sql,vote,vote,id);
     }
 
+    private static final RowMapper<PostDetails> POST_DETAIL_ROW_MAPPER = new RowMapper<PostDetails>() {
 
+        @Override
+        public PostDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+            return new PostDetails(rs.getInt("id"),
+                    rs.getString("forum"),
+                    rs.getString("user"),
+                    rs.getString("thread"),
+                    rs.getInt("parent"),
+                    rs.getString("message"),
+                    rs.getString("date"),
+                    rs.getBoolean("isApproved"),
+                    rs.getBoolean("isDeleted"),
+                    rs.getBoolean("isEdited"),
+                    rs.getBoolean("isHighlighted"),
+                    rs.getBoolean("isSpam"),
+                    rs.getInt("likes"),
+                    rs.getInt("dislikes"));
+        }
+    };
 }

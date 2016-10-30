@@ -31,7 +31,7 @@ public class PostController {
     }
 
     @RequestMapping(path = "db/api/post/create", method = RequestMethod.POST)
-    public Result<?> forumCreate(@RequestBody PostRequest body){
+    public Result forumCreate(@RequestBody PostRequest body){
         if (    StringUtils.isEmpty(body.getDate()) ||
                 StringUtils.isEmpty(body.getForum()) ||
                 StringUtils.isEmpty(body.getUser()) ||
@@ -54,7 +54,7 @@ public class PostController {
     }
 
     @RequestMapping(path = "db/api/post/details", method = RequestMethod.GET)
-    public Result<?> postDetails(@RequestParam(name = "post") Integer post,
+    public Result postDetails(@RequestParam(name = "post") Integer post,
                                  @RequestParam(name = "related", required = false) String[] related) {
 
         if (!Functions.isArrayValid(related, "user", "thread", "forum")||post==null) {
@@ -70,7 +70,7 @@ public class PostController {
     }
 
     @RequestMapping(path = "db/api/forum/listPosts", method = RequestMethod.GET)
-    public Result<?> listForumPosts(@RequestParam(name = "forum") String short_name,
+    public Result listForumPosts(@RequestParam(name = "forum") String short_name,
                                          @RequestParam(name = "limit", required = false) Integer limit,
                                          @RequestParam(name = "order", required = false) String order,
                                          @RequestParam(name = "since", required = false) String since,
@@ -95,7 +95,7 @@ public class PostController {
     }
 
     @RequestMapping(path = "db/api/post/list", method = RequestMethod.GET)
-    public Result<?> listPosts(@RequestParam(name = "forum", required = false) String short_name,
+    public Result listPosts(@RequestParam(name = "forum", required = false) String short_name,
                                     @RequestParam(name = "thread", required = false) Integer thread,
                                     @RequestParam(name = "limit", required = false) Integer limit,
                                     @RequestParam(name = "order", required = false) String order,
@@ -123,7 +123,7 @@ public class PostController {
     }
 
     @RequestMapping(path = "db/api/post/update", method = RequestMethod.POST)
-    public Result<?> updatePost(@RequestBody MessageUpdate body) {
+    public Result updatePost(@RequestBody MessageUpdate body) {
         if (StringUtils.isEmpty(body.getMessage())||body.getPost()==null) {
             return Result.incorrectRequest();
         }
@@ -134,21 +134,21 @@ public class PostController {
     }
 
     @RequestMapping(path = "db/api/post/remove", method = RequestMethod.POST)
-    public Result<?> deletePost(@RequestBody Vote body) {
+    public Result deletePost(@RequestBody Vote body) {
         if (postService.remove(body.getPost())==0)
             Result.notFound();
         return Result.ok("post: " + body.getPost());
     }
 
     @RequestMapping(path = "db/api/post/restore", method = RequestMethod.POST)
-    public Result<?> restorePost(@RequestBody Vote body) {
+    public Result restorePost(@RequestBody Vote body) {
         if (postService.restore(body.getPost()) == 0)
             Result.notFound();
         return Result.ok("post: " + body.getPost());
     }
 
     @RequestMapping(path = "db/api/post/vote", method = RequestMethod.POST)
-    public Result<?>  ratePost(@RequestBody Vote body) {
+    public Result  ratePost(@RequestBody Vote body) {
         String field = Functions.getFieldVote(body.getVote());
         if (field == null) {
             return Result.incorrectRequest();

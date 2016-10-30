@@ -37,20 +37,6 @@ public class UserService {
 		return template.queryForObject(sql, USER_DETAIL_ROWMAPPER, email);
 	}
 
-	private static final RowMapper<UserDetail> USER_DETAIL_ROWMAPPER = new RowMapper<UserDetail>() {
-
-		@Override
-		public UserDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
-
-			return new UserDetail(rs.getString("user_name"),
-					rs.getString("about"),
-					rs.getString("name"),
-					rs.getString("email"),
-					rs.getInt("id"),
-					rs.getBoolean("isAnonymous"));
-		}
-	};
-
 	public List<String> following(String email) {
 		String sql = "SELECT `followee` FROM `Followers` WHERE `follower` = ?;";
 		return  template.queryForList(sql, String.class, email);
@@ -128,7 +114,7 @@ public class UserService {
         String sql ="SELECT `id` " +
                     "FROM `Post` " +
                     "WHERE `user` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-                    "ORDER BY `date`, ? ";
+                    "ORDER BY `date` ? ";
         List<Integer> result = new ArrayList<>();
         if(limit>0){
             template.queryForList(sql+"LIMIT ?;",result,email,since,order,limit);
@@ -142,7 +128,7 @@ public class UserService {
         String sql ="SELECT `id` FROM `Thread` " +
                     "JOIN  `User` ON `Thread`.`user` = `User`.`email`"+
                     "AND `User`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-                    "ORDER BY `date`, ? ";
+                    "ORDER BY `date` ? ";
         List<Integer> result = new ArrayList<>();
         if(limit>0){
             template.queryForList(sql+"LIMIT ?;",result,email,since,order,limit);
@@ -151,19 +137,19 @@ public class UserService {
         }
         return result;
     }
-	public List<String> getListFollowing(String email, String order, Integer since_id, Integer limit) {
-		List<String> result = new ArrayList<>();
-		String sql = "SELECT `followee` " +
-				"FROM `Followers` " +
-				"JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
-				"AND `Followers`.`follower` = ?  " +
-				"AND `User`.`id` = ? " +
-				"ORDER BY `USER`.`name` ?";
-		if (limit > 0) {
-			template.queryForList(sql + "LIMIT ?;", result, email, since_id, order, limit);
-		} else {
-			template.queryForList(sql + ";", result, email, since_id, order);
+
+	private static final RowMapper<UserDetail> USER_DETAIL_ROWMAPPER = new RowMapper<UserDetail>() {
+
+		@Override
+		public UserDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+			return new UserDetail(rs.getInt("id"),
+					rs.getString("user_name"),
+					rs.getString("name"),
+					rs.getString("email"),
+					rs.getString("about"),
+					rs.getBoolean("isAnonymous"));
 		}
-		return result;
-	}
+	};
+
 }

@@ -16,7 +16,7 @@ public class UserDetail {
     private List<String> following;
     private List<Integer> subscriptions;
 
-    public UserDetail(String username, String about, String name, String email, Integer id, Boolean isAnonymous) {
+    public UserDetail(Integer id, String username, String name, String email,  String about, Boolean isAnonymous) {
         this.username = username;
         this.about = about;
         this.name = name;

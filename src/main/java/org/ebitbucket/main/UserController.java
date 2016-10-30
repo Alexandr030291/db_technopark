@@ -24,7 +24,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/create/", method = RequestMethod.POST)
-    public Result<?> userCreate(@RequestBody UserProfile body) {
+    public Result userCreate(@RequestBody UserProfile body) {
         if (StringUtils.isEmpty(body.getEmail()))
             return Result.invalidReques();
 
@@ -44,7 +44,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/details/?user", method = RequestMethod.GET)
-    public Result<?> userDetails(@RequestParam("email") String email) {
+    public Result userDetails(@RequestParam("email") String email) {
         UserDetail userDetail = userService.profil(email);
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
@@ -53,7 +53,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/follow/", method = RequestMethod.POST)
-    public Result<?> userFollow(@RequestBody FollowerRequesr body) {
+    public Result userFollow(@RequestBody FollowerRequesr body) {
         UserDetail userDetail = userService.profil(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
@@ -64,7 +64,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/unfollow", method = RequestMethod.POST)
-    public Result<?> userUnFollow(@RequestBody FollowerRequesr body) {
+    public Result userUnFollow(@RequestBody FollowerRequesr body) {
         UserDetail userDetail = userService.profil(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
@@ -76,7 +76,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/updateProfile", method = RequestMethod.POST)
-    public Result<?> updateProfile(@RequestBody UserProfile body){
+    public Result updateProfile(@RequestBody UserProfile body){
         UserDetail userDetail = userService.profil(body.getEmail());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
@@ -89,7 +89,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/listFollowers", method = RequestMethod.GET)
-    public Result<?> listFollowers(
+    public Result listFollowers(
             @RequestParam("email") String email,
             @RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "order", required = false) String order,
@@ -114,7 +114,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/listFollowing", method = RequestMethod.GET)
-    public Result<?> listFollowing(
+    public Result listFollowing(
             @RequestParam("email") String email,
             @RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "order", required = false) String order,
@@ -139,7 +139,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/forum/listUsers", method = RequestMethod.GET)
-    public Result<?> listPost(@RequestParam(name = "user") String email,
+    public Result listPost(@RequestParam(name = "user") String email,
                               @RequestParam(name = "limit", required = false) Integer limit,
                               @RequestParam(name = "order", required = false) String order,
                               @RequestParam(name = "since", required = false) String since) {

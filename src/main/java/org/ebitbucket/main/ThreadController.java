@@ -31,7 +31,7 @@ public class ThreadController {
     }
 
     @RequestMapping(path = "db/api/thread/create", method = RequestMethod.POST)
-    public Result<?> threadCreate(@RequestBody ThreadRequest body){
+    public Result threadCreate(@RequestBody ThreadRequest body){
         if (    StringUtils.isEmpty(body.getForum()) ||
                 StringUtils.isEmpty(body.getUser()) ||
                 StringUtils.isEmpty(body.getTitle()) ||
@@ -54,7 +54,7 @@ public class ThreadController {
     }
 
     @RequestMapping(path = "db/api/thread/subscribe", method = RequestMethod.POST)
-    public Result<?> subscribe(@RequestBody Subscription body) {
+    public Result subscribe(@RequestBody Subscription body) {
         if (    body.getThread() == null ||
                 StringUtils.isEmpty(body.getUser()))
             return Result.invalidReques();
@@ -65,7 +65,7 @@ public class ThreadController {
     }
 
     @RequestMapping(path = "db/api/thread/unsubscribe", method = RequestMethod.POST)
-    public Result<?> unsubscribe(@RequestBody Subscription body) {
+    public Result unsubscribe(@RequestBody Subscription body) {
         if (    body.getThread() == null ||
                 StringUtils.isEmpty(body.getUser()))
             return Result.invalidReques();
@@ -76,7 +76,7 @@ public class ThreadController {
     }
 
     @RequestMapping(path = "db/api/thread/details", method = RequestMethod.GET)
-    public Result<?> threadDetails(@RequestParam(name = "thread") Integer thread,
+    public Result threadDetails(@RequestParam(name = "thread") Integer thread,
                                    @RequestParam(name = "related", required = false) String[] related) {
         if (thread==null) {
             return Result.invalidReques();
@@ -92,7 +92,7 @@ public class ThreadController {
     }
 
     @RequestMapping(path = "db/api/forum/listThreads", method = RequestMethod.GET)
-    public Result<?> listForumThreads(@RequestParam(name = "forum") String short_name,
+    public Result listForumThreads(@RequestParam(name = "forum") String short_name,
                                       @RequestParam(name = "limit", required = false) Integer limit,
                                       @RequestParam(name = "order", required = false) String order,
                                       @RequestParam(name = "since", required = false) String since,
@@ -117,7 +117,7 @@ public class ThreadController {
     }
 
     @RequestMapping(path = "db/api/thread/list", method = RequestMethod.GET)
-    public Result<?> listThreads(@RequestParam(name = "forum", required = false) String short_name,
+    public Result listThreads(@RequestParam(name = "forum", required = false) String short_name,
                                  @RequestParam(name = "user", required = false) String email,
                                  @RequestParam(name = "limit", required = false) Integer limit,
                                  @RequestParam(name = "order", required = false) String order,
@@ -144,7 +144,7 @@ public class ThreadController {
     }
 
     @RequestMapping(path = "db/api/thread/vote", method = RequestMethod.POST)
-    public Result<?>  ratePost(@RequestBody Vote body) {
+    public Result  ratePost(@RequestBody Vote body) {
         String field = Functions.getFieldVote(body.getVote());
         if (field == null) {
             return Result.incorrectRequest();
@@ -157,35 +157,35 @@ public class ThreadController {
 
 
     @RequestMapping(path = "db/api/thread/close", method = RequestMethod.POST)
-    public Result<?>  closeThread(@RequestBody Vote body) {
+    public Result  closeThread(@RequestBody Vote body) {
         if (threadService.close(body.getThread())==0)
             return Result.notFound();
         return Result.ok("thread: " + body.getThread());
     }
 
     @RequestMapping(path = "db/api/thread/open", method = RequestMethod.POST)
-    public Result<?>  openThread(@RequestBody Vote body) {
+    public Result  openThread(@RequestBody Vote body) {
         if (threadService.open(body.getThread())==0)
             return Result.notFound();
         return Result.ok("thread: " + body.getThread());
     }
 
     @RequestMapping(path = "db/api/thread/restore", method = RequestMethod.POST)
-    public Result<?>  restoreThread(@RequestBody Vote body) {
+    public Result  restoreThread(@RequestBody Vote body) {
         if (threadService.restore(body.getThread())==0)
             return Result.notFound();
         return Result.ok("thread: " + body.getThread());
     }
 
     @RequestMapping(path = "db/api/thread/remove", method = RequestMethod.POST)
-    public Result<?>  removeThread(@RequestBody Vote body) {
+    public Result  removeThread(@RequestBody Vote body) {
         if (threadService.remove(body.getThread())==0)
             return Result.notFound();
         return Result.ok("thread: " + body.getThread());
     }
 
     @RequestMapping(path = "db/api/thread/update", method = RequestMethod.POST)
-    public Result<?> updatePost(@RequestBody MessageUpdate body) {
+    public Result updatePost(@RequestBody MessageUpdate body) {
         if (StringUtils.isEmpty(body.getMessage()) ||StringUtils.isEmpty(body.getSlug())|| body.getThread() == null) {
             return Result.incorrectRequest();
         }
@@ -196,7 +196,7 @@ public class ThreadController {
     }
 
     @RequestMapping(path = "db/api/thread/listPosts", method = RequestMethod.GET)
-    public Result<?>  listPostsInThread(@RequestParam(name = "thread") Integer thread,
+    public Result  listPostsInThread(@RequestParam(name = "thread") Integer thread,
                                         @RequestParam(name = "limit", required = false) Integer limit,
                                         @RequestParam(name = "sort", required = false) String sort,
                                         @RequestParam(name = "order", required = false) String order,
