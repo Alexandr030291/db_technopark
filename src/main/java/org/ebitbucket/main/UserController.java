@@ -52,7 +52,7 @@ final public class UserController {
         return Result.ok(userDetail);
     }
 
-    @RequestMapping(path = "db/api/user/follow", method = RequestMethod.POST)
+    @RequestMapping(path = "db/api/user/follow/", method = RequestMethod.POST)
     public Result<?> userFollow(@RequestBody FollowerRequesr body) {
         UserDetail userDetail = userService.profil(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
@@ -161,12 +161,12 @@ final public class UserController {
         return Result.ok(postDetailsList);
     }
 
-    private class FollowerRequesr{
+    public static class FollowerRequesr{
         private final String follower;
         private final String followee;
 
         @JsonCreator
-        private FollowerRequesr(@JsonProperty("follower") String follower, @JsonProperty("followee") String followee){
+        public FollowerRequesr(@JsonProperty("follower") String follower, @JsonProperty("followee") String followee){
             this.follower = follower;
             this.followee = followee;
         }
