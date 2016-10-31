@@ -26,23 +26,20 @@ final public class ForumController{
                 StringUtils.isEmpty(body.getName())||
                 StringUtils.isEmpty(body.getShort_name()))
             return Result.invalidReques();
-        int id = forumService.create(body.getName(),
-                body.getName(),
-                body.getEmail());
-        if (id <= 0) {
+
+        if (forumService.create(body.getName(),body.getShort_name(),body.getEmail()) == -1) {
             return Result.ok(forumService.detail(body.getShort_name()));
         }
-        body.setId(id);
         return Result.ok(body);
     }
 
-    @RequestMapping(path = "db/api/forumService/details", method = RequestMethod.GET)
-    public Result forumDetails(@RequestParam(name = "forumService") String short_name,
-                                  @RequestParam(name = "related", required = false) String[] related){
+    @RequestMapping(path = "db/api/forum/details", method = RequestMethod.GET)
+    public Result forumDetails(@RequestParam(name = "forum") String short_name,
+                               @RequestParam(name = "related", required = false) String[] related){
         if (StringUtils.isEmpty(short_name)) {
             return Result.invalidReques();
         }
-        if (Functions.isArrayValid(related, "user")) {
+        if (!Functions.isArrayValid(related, "user")) {
             return Result.incorrectRequest();
         }
         ForumDetail forumDetail = forumService.detail(short_name);
@@ -51,7 +48,7 @@ final public class ForumController{
         }
 
         if (related != null && Arrays.asList(related).contains("user")) {
-            forumDetail.setUserDetail(userService.profil(forumDetail.getUser().toString()));
+            forumDetail.setUserDetail(userService.profilAll(forumDetail.getUser().toString()));
         }
 
         return Result.ok(forumDetail);

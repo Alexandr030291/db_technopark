@@ -13,7 +13,7 @@ public class ForumRequest {
     public ForumRequest(@JsonProperty("name") String name,
                         @JsonProperty("short_name") String short_name,
                         @JsonProperty("user") String user) {
-        id = -1;
+        id = 0;
         this.name = name;
         this.short_name = short_name;
         this.email = user;

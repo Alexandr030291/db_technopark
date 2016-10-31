@@ -8,7 +8,7 @@ public class ForumDetail {
     private Object user;
 
     public ForumDetail(Integer id, String name, String short_name, Object userDetail) {
-        this.id = id;
+        this.id = 0;//id;
         this.name = name;
         this.short_name = short_name;
         this.user = userDetail;

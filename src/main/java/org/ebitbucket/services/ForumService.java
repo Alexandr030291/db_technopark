@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -21,12 +22,12 @@ public class ForumService {
         this.template = template;
     }
 
-    public int create(String name, String short_name, String email){
+    public int create(String name, String short_name, String email) {
         try {
             String sql = "INSERT INTO `Forum`(`name`, `short_name`,`user`) VALUE(?,?,?);";
-            template.update(sql,name, short_name, email);
-            return 0 ;
-        }catch (DuplicateKeyException dk) {
+            template.update(sql, name, short_name, email);
+            return 0;
+        } catch (DuplicateKeyException dk) {
             return -1;
         }
     }
@@ -69,7 +70,7 @@ public class ForumService {
         return result;
     }
 
-    private static final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = new RowMapper<ForumDetail>() {
+    private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = new RowMapper<ForumDetail>() {
 
         @Override
         public ForumDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
