@@ -1,3 +1,4 @@
+
 package org.ebitbucket.model.User;
 
 import org.ebitbucket.services.UserService;
@@ -5,29 +6,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class UserDetail {
-    private String username;
+
     private String about;
-    private String name;
     private String email;
-    private Integer id;
-    private Boolean isAnonymous;
-    private List<String> followers;
-    private List<String> following;
-    private List<Integer> subscriptions;
+    private int id;
+    private boolean isAnonymous;
+    private String name;
+    private String username;
+
 
     public UserDetail(Integer id, String username, String name, String email,  String about, Boolean isAnonymous) {
-        this.username = username;
-        this.about = about;
-        this.name = name;
-        this.email = email;
-        this.id = id;
-        this.isAnonymous = isAnonymous;
 
-        UserService userService = new UserService(new JdbcTemplate());
-        setFollowers(userService.followers(this.email));
-        setFollowing(userService.following(this.email));
-        setSubscriptions(userService.subscriptions(this.email));
     }
 
     public void setAbout(String about) {
@@ -36,18 +27,6 @@ public class UserDetail {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setFollowers(List<String> followers) {
-        this.followers = followers;
-    }
-
-    public void setFollowing(List<String> following) {
-        this.following = following;
-    }
-
-    public void setSubscriptions(List<Integer> subscriptions) {
-        this.subscriptions = subscriptions;
     }
 
     public String getUsername() {
@@ -74,15 +53,19 @@ public class UserDetail {
         return isAnonymous;
     }
 
-    public List<String> getFollowers() {
-        return followers;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public List<String> getFollowing() {
-        return following;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public List<Integer> getSubscriptions() {
-        return subscriptions;
+    public void setAnonymous(boolean anonymous) {
+        isAnonymous = anonymous;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

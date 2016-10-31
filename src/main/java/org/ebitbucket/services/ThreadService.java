@@ -33,15 +33,15 @@ public class ThreadService {
                       Boolean isClosed,
                       Boolean isDeleted) {
         String sql = "INSERT INTO `Thread` (`forum`, `user`, `title`, `message`, `slug`, `date`, `isClosed`, `isDeleted`) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
         template.update(sql, forum, user, title, message,  slug, date, isClosed, isDeleted);
-        sql = "SELECT `id` FROM `Post` WHERE id = last_insert_id();";
+        sql = "SELECT `id` FROM `Post` WHERE `id` = last_insert_id();";
         return template.queryForObject(sql, Integer.class);
     }
 
     public boolean subscribe(Integer thread, String user){
         try {
-            String sql="INSERT INTO `Subscription` (`user`, `thread`) VALUES (?, ?);";
+            String sql="INSERT INTO `Subscriptions` (`user`, `thread`) VALUES (?, ?);";
             template.update(sql,thread,user);
             return true;
         }catch (DataIntegrityViolationException dive){
@@ -51,7 +51,7 @@ public class ThreadService {
 
     public boolean unsubscribe(Integer thread, String user){
         try {
-            String sql="DELETE FROM `Subscription` WHERE `thread`= ? AND `user` = ?;";
+            String sql="DELETE FROM `Subscriptions` WHERE `thread`= ? AND `user` = ?;";
             template.update(sql,thread,user);
             return true;
         }catch (DataIntegrityViolationException dive){

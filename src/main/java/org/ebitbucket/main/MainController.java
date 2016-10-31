@@ -22,7 +22,7 @@ public class MainController {
         this.mainService = mainService;
     }
 
-    @RequestMapping(path = "db/api/clear/", method = RequestMethod.POST)
+    @RequestMapping(path = "db/api/clear", method = RequestMethod.POST)
     public Result clear() {
         mainService.allClear();
         return Result.ok();

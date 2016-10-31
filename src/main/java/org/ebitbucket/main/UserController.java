@@ -3,7 +3,7 @@ package org.ebitbucket.main;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ebitbucket.model.Post.PostDetails;
-import org.ebitbucket.model.User.UserDetail;
+import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.User.UserProfile;
 import org.ebitbucket.services.PostService;
 import org.ebitbucket.services.UserService;
@@ -23,38 +23,27 @@ final public class UserController {
         this.postService = postService;
     }
 
-    @RequestMapping(path = "db/api/user/create/", method = RequestMethod.POST)
+    @RequestMapping(path = "db/api/user/create", method = RequestMethod.POST)
     public Result userCreate(@RequestBody UserProfile body) {
         if (StringUtils.isEmpty(body.getEmail()))
             return Result.invalidReques();
-
-        final Integer id = userService.create(
-                body.getEmail(),
-                body.getName(),
-                body.getUsername(),
-                body.getAbout(),
-                body.getIsAnonymous()
-        );
-        if (id == -1)
+        if (userService.create(body.getEmail(),body.getName(),body.getUsername(),body.getAbout(),body.getIsAnonymous()) == -1)
             return Result.userAlreadyExists();
-
-        body.setId(id);
-
-        return Result.ok(body);
+        return Result.ok(userService.profil(body.getEmail()));
     }
 
-    @RequestMapping(path = "db/api/user/details/?user", method = RequestMethod.GET)
-    public Result userDetails(@RequestParam("email") String email) {
-        UserDetail userDetail = userService.profil(email);
+    @RequestMapping(path = "db/api/user/details", method = RequestMethod.GET)
+    public Result userDetails(@RequestParam(name = "user") String email) {
+        UserDetailAll userDetail = userService.profilAll(email);
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
         return Result.ok(userDetail);
     }
 
-    @RequestMapping(path = "db/api/user/follow/", method = RequestMethod.POST)
+    @RequestMapping(path = "db/api/user/follow", method = RequestMethod.POST)
     public Result userFollow(@RequestBody FollowerRequesr body) {
-        UserDetail userDetail = userService.profil(body.getFollower());
+        UserDetailAll userDetail = userService.profilAll(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
@@ -65,7 +54,7 @@ final public class UserController {
 
     @RequestMapping(path = "db/api/user/unfollow", method = RequestMethod.POST)
     public Result userUnFollow(@RequestBody FollowerRequesr body) {
-        UserDetail userDetail = userService.profil(body.getFollower());
+        UserDetailAll userDetail = userService.profilAll(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
@@ -77,7 +66,7 @@ final public class UserController {
 
     @RequestMapping(path = "db/api/user/updateProfile", method = RequestMethod.POST)
     public Result updateProfile(@RequestBody UserProfile body){
-        UserDetail userDetail = userService.profil(body.getEmail());
+        UserDetailAll userDetail = userService.profilAll(body.getEmail());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
@@ -102,7 +91,7 @@ final public class UserController {
         Integer _since_id = (since_id==null)?0:since_id;
         Integer _limit = (limit == null)?0:limit;
 
-        UserDetail userDetail = userService.profil(email);
+        UserDetailAll userDetail = userService.profilAll(email);
         if (StringUtils.isEmpty(userDetail.getEmail())) {
             return Result.notFound();
         }
@@ -127,7 +116,7 @@ final public class UserController {
         Integer _since_id = (since_id==null)?0:since_id;
         Integer _limit = (limit == null)?0:limit;
 
-        UserDetail userDetail = userService.profil(email);
+        UserDetailAll userDetail = userService.profilAll(email);
         if (StringUtils.isEmpty(userDetail.getEmail())) {
             return Result.notFound();
         }

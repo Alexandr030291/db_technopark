@@ -1,16 +1,17 @@
 package org.ebitbucket.model.Forum;
 
+@SuppressWarnings("unused")
 public class ForumDetail {
     private Integer id;
     private String name;
     private final String short_name;
-    private Object userDetail;
+    private Object user;
 
     public ForumDetail(Integer id, String name, String short_name, Object userDetail) {
         this.id = id;
         this.name = name;
         this.short_name = short_name;
-        this.userDetail = userDetail;
+        this.user = userDetail;
     }
 
     public Integer getId() {
@@ -25,8 +26,8 @@ public class ForumDetail {
         return short_name;
     }
 
-    public Object getUserDetail() {
-        return userDetail;
+    public Object getUser() {
+        return user;
     }
 
     public void setId(Integer id) {
@@ -38,6 +39,6 @@ public class ForumDetail {
     }
 
     public void setUserDetail(Object userDetail) {
-        this.userDetail = userDetail;
+        this.user = userDetail;
     }
 }

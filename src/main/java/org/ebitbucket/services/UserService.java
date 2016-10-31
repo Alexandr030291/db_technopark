@@ -1,6 +1,7 @@
 package org.ebitbucket.services;
 
 import org.ebitbucket.model.User.UserDetail;
+import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -23,18 +24,22 @@ public class UserService {
 
 	public int create(String email, String name, String username, String about, Boolean isAnonymous) {
 		try {
-			String sql = "INSERT INTO `User`(`email`, `name`, `user_name`, `about`, `isAnonymous`) VALUE(?,?,?,?,?);";
-			template.update(sql, email, name, username, about, isAnonymous);
-			sql = "SELECT `id` FROM `User` WHERE `email` =?;";
-			return template.queryForObject(sql, Integer.class, email);
+			String sql = "INSERT INTO `UserProfile` (`username`, `email`, `name`, `about`, `isAnonymous`) VALUES (?, ?, ?, ?, ?);";
+			template.update(sql, username, email, name, about, isAnonymous);
+			return 0;
 		} catch (DuplicateKeyException dk) {
 			return -1;
 		}
 	}
 
-	public UserDetail profil(String email) {
-		String sql = "SELECT * FROM `User` WHERE `email` = ?;";
-		return template.queryForObject(sql, USER_DETAIL_ROWMAPPER, email);
+    public UserDetail profil(String email) {
+        String sql = "SELECT * FROM `UserProfile` WHERE `email` = ?;";
+        return template.queryForObject(sql, USER_DETAIL_ROWMAPPER, email);
+    }
+
+	public UserDetailAll profilAll(String email) {
+		String sql = "SELECT * FROM `UserProfile` WHERE `email` = ?;";
+		return template.queryForObject(sql, USER_DETAIL_ALL_ROW_MAPPER, email);
 	}
 
 	public List<String> following(String email) {
@@ -126,8 +131,8 @@ public class UserService {
 
     public List<Integer> getListThread(String email, String order, String since, Integer limit){
         String sql ="SELECT `id` FROM `Thread` " +
-                    "JOIN  `User` ON `Thread`.`user` = `User`.`email`"+
-                    "AND `User`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
+                    "JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`email`"+
+                    "AND `UserProfile`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
                     "ORDER BY `date` ? ";
         List<Integer> result = new ArrayList<>();
         if(limit>0){
@@ -138,17 +143,36 @@ public class UserService {
         return result;
     }
 
-	private static final RowMapper<UserDetail> USER_DETAIL_ROWMAPPER = new RowMapper<UserDetail>() {
+    private static final RowMapper<UserDetail> USER_DETAIL_ROWMAPPER = new RowMapper<UserDetail>() {
+
+        @Override
+        public UserDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+            return new UserDetail(rs.getInt("id"),
+                    rs.getString("username"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("about"),
+                    rs.getBoolean("isAnonymous"));
+        }
+    };
+
+	private final RowMapper<UserDetailAll> USER_DETAIL_ALL_ROW_MAPPER = new RowMapper<UserDetailAll>() {
 
 		@Override
-		public UserDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
+		public UserDetailAll mapRow(ResultSet rs, int rowNum) throws SQLException {
 
-			return new UserDetail(rs.getInt("id"),
-					rs.getString("user_name"),
-					rs.getString("name"),
-					rs.getString("email"),
-					rs.getString("about"),
-					rs.getBoolean("isAnonymous"));
+            String email = rs.getString("email");
+            UserDetailAll userDetailAll = new UserDetailAll(rs.getInt("id"),
+                    rs.getString("username"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("about"),
+                    rs.getBoolean("isAnonymous"));
+            userDetailAll.setFollowers(followers(email));
+            userDetailAll.setFollowing(following(email));
+            userDetailAll.setSubscriptions(subscriptions(email));
+			return userDetailAll;
 		}
 	};
 

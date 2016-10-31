@@ -1,94 +1,121 @@
-CREATE TABLE `User`
+CREATE TABLE `UserProfile`
 (
-  `id` INT PRIMARY KEY AUTO_INCREMENT,
-  `email` VARCHAR(50) NOT NULL,
+  `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `email` VARCHAR(50) NOT NULL UNIQUE KEY,
   `name` VARCHAR(50),
-  `user_name` VARCHAR(50),
-  `about` VARCHAR(50),
-  `isAnonymous` BOOLEAN
+  `username` VARCHAR(50),
+  `about` TEXT,
+  `isAnonymous` BOOLEAN NOT NULL DEFAULT FALSE
 );
-CREATE UNIQUE INDEX `User_email_uindex` ON `User` (`email`);
 
 CREATE TABLE `Forum`
 (
-  `id` INT PRIMARY KEY AUTO_INCREMENT,
-  `name` VARCHAR(50) NOT NULL,
-  `short_name` VARCHAR(50) NOT NULL,
-  `user` VARCHAR(50) NOT NULL,
-  FOREIGN KEY (`user`) REFERENCES `User`(`email`)
-  ON DELETE CASCADE
+  `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `name` VARCHAR(50) NOT NULL UNIQUE KEY,
+  `short_name` VARCHAR(50) NOT NULL UNIQUE KEY,
+  `user` VARCHAR(50) NOT NULL
 );
-CREATE UNIQUE INDEX `Forum_name_uindex` ON `Forum` (`name`);
-CREATE UNIQUE INDEX `Forum_short_name_uindex` ON `Forum` (`short_name`);
 
 CREATE TABLE `Post`
 (
-  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
   `forum` VARCHAR(50) NOT NULL,
   `user` VARCHAR(50) NOT NULL,
-  `thread` INT,
-  `message` TEXT,
+  `thread` INT NOT NULL ,
+  `message` TEXT NOT NULL ,
   `date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-  `parent` INT,
-  `isApproved` BOOLEAN,
-  `isHighlighted` BOOLEAN,
-  `isEdited` BOOLEAN,
-  `isSpam` BOOLEAN,
-  `isDeleted` BOOLEAN,
+  `parent` INT NULL DEFAULT NULL ,
+  `isApproved` BOOLEAN NOT NULL DEFAULT FALSE ,
+  `isHighlighted` BOOLEAN NOT NULL DEFAULT FALSE ,
+  `isEdited` BOOLEAN NOT NULL DEFAULT FALSE ,
+  `isSpam` BOOLEAN NOT NULL DEFAULT FALSE ,
+  `isDeleted` BOOLEAN NOT NULL DEFAULT FALSE ,
 
-  likes INT NOT NULL DEFAULT 0,
-  dislikes INT NOT NULL DEFAULT 0,
-  mpath VARCHAR(255),
-
-  FOREIGN KEY (`user`) REFERENCES `User` (`email`)
-  ON DELETE CASCADE,
-  FOREIGN KEY (`forum`) REFERENCES `Forum` (`short_name`)
-  ON DELETE CASCADE
+  `likes` INT NOT NULL DEFAULT 0,
+  `dislikes` INT NOT NULL DEFAULT 0,
+  `mpath` VARCHAR(255)
 );
 
 CREATE TABLE `Thread`
 (
-  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
   `forum` VARCHAR(50) NOT NULL,
   `user` VARCHAR(50) NOT NULL,
-  `title` VARCHAR(50),
-  `message` TEXT,
-  `slug` VARCHAR(50),
+  `title` VARCHAR(50) NOT NULL ,
+  `message` TEXT NOT NULL ,
+  `slug` VARCHAR(50) NOT NULL ,
   `date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-  `isClosed` BOOLEAN,
-  `isDelete` BOOLEAN,
+  `isClosed` BOOLEAN NOT NULL DEFAULT FALSE ,
+  `isDeleted` BOOLEAN NOT NULL DEFAULT FALSE ,
 
-  likes INT NOT NULL DEFAULT 0,
-  dislikes INT NOT NULL DEFAULT 0,
-
-  FOREIGN KEY (`user`) REFERENCES `User` (`email`)
-  ON DELETE CASCADE,
-  FOREIGN KEY (`forum`) REFERENCES `Forum` (`short_name`)
-  ON DELETE CASCADE
+  `likes` INT NOT NULL DEFAULT 0,
+  `dislikes` INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE `Subscriptions`
 (
   `user` VARCHAR(50) NOT NULL,
   `thread` INT NOT NULL,
-  UNIQUE (`user`,`thread`),
-
-  FOREIGN KEY (`user`) REFERENCES `User` (`email`)
-  ON DELETE CASCADE,
-  FOREIGN KEY (`thread`) REFERENCES `Thread`(`id`)
-  ON DELETE CASCADE
+  UNIQUE (`user`,`thread`)
 );
 
 CREATE TABLE `Followers`
 (
   `follower` VARCHAR(50) NOT NULL,
   `followee` VARCHAR(50) NOT NULL,
-  UNIQUE(`follower`, `followee`),
-
-  FOREIGN KEY (`follower`) REFERENCES `User` (`email`)
-  ON DELETE CASCADE,
-  FOREIGN KEY (`followee`) REFERENCES `User` (`email`)
-  ON DELETE CASCADE
+  UNIQUE(`follower`, `followee`)
 );
+
+ALTER TABLE `Forum`
+  ADD CONSTRAINT `fk_Forum_1`
+  FOREIGN KEY (`user`)
+  REFERENCES `UserProfile` (`email`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `Post`
+  ADD constraint `fk_Post_1`
+  FOREIGN KEY (`user`) REFERENCES `UserProfile` (`email`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `Post`
+  ADD constraint `fk_Post_2`
+  FOREIGN KEY `Post`(`forum`) REFERENCES `Forum` (`short_name`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `Post`
+  ADD constraint `fk_Post_3`
+  FOREIGN KEY (`thread`) REFERENCES `Thread`(`id`)
+  ON DELETE CASCADE;
+
+
+ALTER TABLE `Thread`
+  ADD constraint `fk_Thread_1`
+  FOREIGN KEY (`user`) REFERENCES `UserProfile` (`email`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `Thread`
+  ADD constraint `fk_Thread_2`
+  FOREIGN KEY (`forum`) REFERENCES `Forum` (`short_name`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `Subscriptions`
+  ADD constraint `fk_Subscriptions_1`
+  FOREIGN KEY (`user`) REFERENCES `UserProfile` (`email`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `Subscriptions`
+  ADD constraint `fk_Subscriptions_2`
+  FOREIGN KEY (`thread`) REFERENCES `Thread`(`id`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `Followers`
+  ADD constraint `fk_Followers_1`
+  FOREIGN KEY (`follower`) REFERENCES `UserProfile` (`email`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `Followers`
+  ADD constraint `fk_Followers_2`
+  FOREIGN KEY (`followee`) REFERENCES `UserProfile` (`email`)
+  ON DELETE CASCADE;

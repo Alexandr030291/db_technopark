@@ -1,5 +1,6 @@
 package org.ebitbucket.model.Tread;
 
+@SuppressWarnings("unused")
 public class ThreadDetail {
     private Integer id;
     private Object forum;

@@ -3,16 +3,12 @@ package org.ebitbucket.main;
 import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Forum.ForumRequest;
-import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.services.ForumService;
-import org.ebitbucket.services.ThreadService;
 import org.ebitbucket.services.UserService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @RestController
 final public class ForumController{
@@ -24,10 +20,10 @@ final public class ForumController{
         this.userService = userService;
     }
 
-    @RequestMapping(path = "db/api/forumService/create", method = RequestMethod.POST)
+    @RequestMapping(path = "db/api/forum/create", method = RequestMethod.POST)
     public Result forumCreate(@RequestBody ForumRequest body){
-        if (    StringUtils.isEmpty(body.getEmail())|
-                StringUtils.isEmpty(body.getName())|
+        if (    StringUtils.isEmpty(body.getEmail())||
+                StringUtils.isEmpty(body.getName())||
                 StringUtils.isEmpty(body.getShort_name()))
             return Result.invalidReques();
         int id = forumService.create(body.getName(),
@@ -55,7 +51,7 @@ final public class ForumController{
         }
 
         if (related != null && Arrays.asList(related).contains("user")) {
-            forumDetail.setUserDetail(userService.profil(forumDetail.getUserDetail().toString()));
+            forumDetail.setUserDetail(userService.profil(forumDetail.getUser().toString()));
         }
 
         return Result.ok(forumDetail);

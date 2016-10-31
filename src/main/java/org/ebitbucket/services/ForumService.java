@@ -1,7 +1,6 @@
 package org.ebitbucket.services;
 
 import org.ebitbucket.model.Forum.ForumDetail;
-import org.ebitbucket.model.User.UserDetail;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -24,10 +23,9 @@ public class ForumService {
 
     public int create(String name, String short_name, String email){
         try {
-            String sql = "INSERT INTO `Forum`(`name`, `short_name`,`email`) VALUE(?,?,?);";
-            template.update(sql,name, short_name, email) ;
-            sql = "SELECT `id` FROM `User` WHERE `short_name` =?;";
-            return template.queryForObject(sql, Integer.class, short_name);
+            String sql = "INSERT INTO `Forum`(`name`, `short_name`,`user`) VALUE(?,?,?);";
+            template.update(sql,name, short_name, email);
+            return 0 ;
         }catch (DuplicateKeyException dk) {
             return -1;
         }

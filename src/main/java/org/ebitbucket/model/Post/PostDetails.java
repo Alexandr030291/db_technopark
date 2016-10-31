@@ -1,5 +1,6 @@
 package org.ebitbucket.model.Post;
 
+@SuppressWarnings("unused")
 public class PostDetails {
     private Integer id;
     private Object forum;
