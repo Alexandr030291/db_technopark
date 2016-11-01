@@ -1,5 +1,7 @@
 package org.ebitbucket.model.Tread;
 
+import org.ebitbucket.lib.Functions;
+
 @SuppressWarnings("unused")
 public class ThreadDetail {
     private Integer id;
@@ -60,11 +62,11 @@ public class ThreadDetail {
         return date;
     }
 
-    public Boolean getClosed() {
+    public Boolean getIsClosed() {
         return isClosed;
     }
 
-    public Boolean getDeleted() {
+    public Boolean getIsDeleted() {
         return isDeleted;
     }
 

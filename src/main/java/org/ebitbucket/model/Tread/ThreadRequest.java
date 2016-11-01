@@ -24,7 +24,7 @@ public class ThreadRequest {
                          @JsonProperty("slug") String slug,
                          @JsonProperty("date") String date,
                          @JsonProperty("isClosed") Boolean isClosed,
-                         @JsonProperty("isDelete") Boolean isDeleted) {
+                         @JsonProperty("isDeleted") Boolean isDeleted) {
         this.id = id;
         this.forum = forum;
         this.user = user;

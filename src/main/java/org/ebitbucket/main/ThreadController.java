@@ -3,10 +3,12 @@ package org.ebitbucket.main;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ebitbucket.lib.Functions;
+import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.MessageUpdate;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.Tread.ThreadRequest;
 import org.ebitbucket.model.User.UserDetail;
+import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.Vote;
 import org.ebitbucket.services.ForumService;
 import org.ebitbucket.services.ThreadService;
@@ -235,14 +237,44 @@ public class ThreadController {
     private ThreadDetail getDetails(Integer id, String[] related){
         ThreadDetail threadDetail = threadService.detail(id);
         if (threadDetail != null) {
+            String forum = threadDetail.getForum().toString();
+            String user = threadDetail.getUser().toString();
+            String title = threadDetail.getTitle();
+            String message = threadDetail.getMessage();
+            String slug = threadDetail.getSlug();
+            String date = threadDetail.getDate();
+            Boolean isClosed = threadDetail.getIsClosed();
+            Boolean isDeleted = threadDetail.getIsDeleted();
+            Integer likes = threadDetail.getLikes();
+            Integer dislikes = threadDetail.getDislikes();
+            ForumDetail forumDetail = null;
+            UserDetailAll userDetail = null;
+            int result =0;
             if (related != null) {
-                if (Arrays.asList(related).contains("forumService")) {
-                    threadDetail.setForum(forumService.detail(threadDetail.getForum().toString()));
+                if (Arrays.asList(related).contains("forum")) {
+                    forumDetail = forumService.detail(forum);
+                    result++;
                 }
 
                 if (Arrays.asList(related).contains("user")) {
-                    threadDetail.setUser(userService.profil(threadDetail.getUser().toString()));
+                    userDetail = userService.profilAll(user);
+                    result++;
                 }
+            }
+            if(result>0) {
+                threadDetail = new ThreadDetail(
+                        id,
+                        (forumDetail != null) ? forumDetail : forum,
+                        (userDetail != null) ? userDetail : user,
+                        title,
+                        message,
+                        slug,
+                        date,
+                        isClosed,
+                        isDeleted,
+                        likes,
+                        dislikes
+                );
             }
             threadDetail.setPoints(threadDetail.getLikes() - threadDetail.getDislikes());
             threadDetail.setPosts(threadService.getCountPost(id));

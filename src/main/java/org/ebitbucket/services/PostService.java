@@ -1,5 +1,6 @@
 package org.ebitbucket.services;
 
+import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Post.PostDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -94,7 +95,7 @@ public class PostService {
                     rs.getString("thread"),
                     rs.getInt("parent"),
                     rs.getString("message"),
-                    rs.getString("date"),
+                    Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
                     rs.getBoolean("isApproved"),
                     rs.getBoolean("isDeleted"),
                     rs.getBoolean("isEdited"),

@@ -1,5 +1,6 @@
 package org.ebitbucket.services;
 
+import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -35,7 +36,7 @@ public class ThreadService {
         String sql = "INSERT INTO `Thread` (`forum`, `user`, `title`, `message`, `slug`, `date`, `isClosed`, `isDeleted`) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
         template.update(sql, forum, user, title, message,  slug, date, isClosed, isDeleted);
-        sql = "SELECT `id` FROM `Post` WHERE `id` = last_insert_id();";
+        sql = "SELECT LAST_INSERT_ID();";
         return template.queryForObject(sql, Integer.class);
     }
 
@@ -169,7 +170,7 @@ public class ThreadService {
                     rs.getString("title"),
                     rs.getString("message"),
                     rs.getString("slug"),
-                    rs.getString("date"),
+                    Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
                     rs.getBoolean("isClosed"),
                     rs.getBoolean("isDeleted"),
                     rs.getInt("likes"),
