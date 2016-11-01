@@ -234,7 +234,7 @@ public class ThreadController {
         return Result.ok(threadDetailsLists);
     }
 
-    private ThreadDetail getDetails(Integer id, String[] related){
+    public ThreadDetail getDetails(Integer id, String[] related){
         ThreadDetail threadDetail = threadService.detail(id);
         if (threadDetail != null) {
             String forum = threadDetail.getForum().toString();

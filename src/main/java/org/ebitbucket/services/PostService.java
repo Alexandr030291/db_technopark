@@ -93,7 +93,7 @@ public class PostService {
                     rs.getString("forum"),
                     rs.getString("user"),
                     rs.getString("thread"),
-                    rs.getInt("parent"),
+                    (rs.getString("parent")!=null)?rs.getInt("parent"):null,
                     rs.getString("message"),
                     Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
                     rs.getBoolean("isApproved"),

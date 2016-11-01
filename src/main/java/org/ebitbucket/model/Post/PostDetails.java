@@ -77,23 +77,23 @@ public class PostDetails {
         return date;
     }
 
-    public Boolean getApproved() {
+    public Boolean getIsApproved() {
         return isApproved;
     }
 
-    public Boolean getDeleted() {
+    public Boolean getIsDeleted() {
         return isDeleted;
     }
 
-    public Boolean getEdited() {
+    public Boolean getIsEdited() {
         return isEdited;
     }
 
-    public Boolean getHighlighted() {
+    public Boolean getIsHighlighted() {
         return isHighlighted;
     }
 
-    public Boolean getSpam() {
+    public Boolean getIsSpam() {
         return isSpam;
     }
 

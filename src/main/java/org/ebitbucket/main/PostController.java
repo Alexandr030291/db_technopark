@@ -1,9 +1,12 @@
 package org.ebitbucket.main;
 
 import org.ebitbucket.lib.Functions;
+import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.MessageUpdate;
 import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Post.PostRequest;
+import org.ebitbucket.model.Tread.ThreadDetail;
+import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.Vote;
 import org.ebitbucket.services.ForumService;
 import org.ebitbucket.services.PostService;
@@ -64,8 +67,6 @@ public class PostController {
         if(postDetails==null){
             return Result.notFound();
         }
-
-        postDetails.setPoints(postDetails.getLikes()-postDetails.getDislikes());
         return Result.ok(postDetails);
     }
 
@@ -162,19 +163,61 @@ public class PostController {
     private PostDetails getPostDetail(int id, String[] related){
         PostDetails postDetails = postService.details(id);
         if (postDetails!=null){
+            String forum = postDetails.getForum().toString();
+            String user = postDetails.getUser().toString();
+            Integer thread = new Integer (postDetails.getThread().toString());
+            Integer parent = postDetails.getParent();
+            String message = postDetails.getMessage();
+            String date = postDetails.getDate();
+            Boolean isApproved = postDetails.getIsApproved();
+            Boolean isDeleted = postDetails.getIsDeleted();
+            Boolean isEdited = postDetails.getIsEdited();
+            Boolean isHighlighted = postDetails.getIsHighlighted();
+            Boolean isSpam = postDetails.getIsSpam();
+
+            int dislikes = postDetails.getDislikes();
+            int likes = postDetails.getLikes();
+
+            UserDetailAll userDetailAll = null;
+            ForumDetail forumDetail = null;
+            ThreadDetail threadDetail = null;
+            int flag = 0;
             if (related != null) {
-                if (Arrays.asList(related).contains("forumService")) {
-                    postDetails.setForum(forumService.detail(postDetails.getForum().toString()));
+                if (Arrays.asList(related).contains("forum")) {
+                    forumDetail = forumService.detail(forum);
+                    flag++;
                 }
 
                 if (Arrays.asList(related).contains("user")) {
-                    postDetails.setUser(userService.profil(postDetails.getUser().toString()));
+                    userDetailAll=userService.profilAll(user);
+                    flag++;
                 }
 
                 if (Arrays.asList(related).contains("thread")){
-                    postDetails.setThread(threadService.detail((Integer)postDetails.getThread()));
+                    threadDetail=(new ThreadController(threadService, forumService, userService)).getDetails(thread,null);  //threadService.detail(thread);
+                    flag++;
+                }
+
+                if(flag>0) {
+                    postDetails = new PostDetails(
+                            id,
+                            (forumDetail != null) ? forumDetail : forum,
+                            (userDetailAll != null) ? userDetailAll : user,
+                            (threadDetail != null) ? threadDetail : thread,
+                            parent,
+                            message,
+                            date,
+                            isApproved,
+                            isDeleted,
+                            isEdited,
+                            isHighlighted,
+                            isSpam,
+                            dislikes,
+                            likes
+                    );
                 }
             }
+            postDetails.setPoints(likes-dislikes);
         }
         return postDetails;
     }
