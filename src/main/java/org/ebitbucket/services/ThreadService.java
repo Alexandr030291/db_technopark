@@ -1,5 +1,6 @@
 package org.ebitbucket.services;
 
+import com.sun.org.apache.xalan.internal.utils.XMLSecurityManager;
 import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -76,49 +77,34 @@ public class ThreadService {
     }
 
     public List<Integer> getListPost(Integer id, String since, String order, Integer limit){
-        String sql ="SELECT `id` FROM `Post`  " +
+        String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
-                    "AND `Thread`.`id` = ? AND `Thread`.TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
-                    "ORDER BY `Post`.`date` ? ";
-        List<Integer> result = new ArrayList<>();
-        if(limit>0){
-            template.queryForList(sql+"LIMIT ?;",result,id,since,order,limit);
-        }else {
-            template.queryForList(sql+";", result, id,since,order);
-        }
-        return result;
+                    "AND `Thread`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
+                    "ORDER BY `Post`.`date` " + order;
+        String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+        return template.queryForList(sql+sqlLimit, Integer.class, id,since);
+
     }
 
     public List<Integer> getListPostInTree(Integer id, String since,String order, Integer limit){
-        String sql ="SELECT `id` FROM `Post`  " +
+        String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
                     "AND `Thread`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
-                    "ORDER BY `Post`.`mpath` ? ";
-        List<Integer> result = new ArrayList<>();
-        if(limit>0){
-            template.queryForList(sql+"LIMIT ?;",result,id,since,order,limit);
-        }else {
-            template.queryForList(sql+";", result, id,since,order);
-        }
-        return result;
+                    "ORDER BY `Post`.`mpath` " + order;
+        String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+        return template.queryForList(sql+sqlLimit, Integer.class, id,since);
     }
 
     public List<Integer> getListPostInParentTree(Integer id, String since,String order, Integer limit){
-        String LIMIT = (limit>0)?"LIMIT ?":"";
-        String sql ="SELECT `id` FROM `Post` WHEN `parent` IN " +
-                    "(SELECT `id` FROM `Post` " +
+        String LIMIT = (limit!=null)?" LIMIT "+limit+"":"";
+        String sql ="SELECT `Post`.`id` FROM `Post` WHERE `parent` IN " +
+                    "(SELECT `Post`.`id` FROM `Post` " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id` AND `Post`.`parent` = NULL " +
                     "AND `Thread`.`id` = ? " +
-                    "ORDER BY `Post`.`parent` ?" +LIMIT+ ")"+
+                    "ORDER BY `Post`.`parent` "+order + LIMIT+ ")"+
                     "AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
-                    "ORDER BY `Post`.`mpath` ? ;";
-        List<Integer> result = new ArrayList<>();
-        if(limit>0){
-            template.queryForList(sql,result,id,order,limit,since,order);
-        }else {
-            template.queryForList(sql, result, id,order,since,order);
-        }
-        return result;
+                    "ORDER BY `Post`.`mpath` " + order + ";";
+        return template.queryForList(sql, Integer.class, id,since);
     }
 
     public int vote(int id, String vote){

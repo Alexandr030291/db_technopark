@@ -43,31 +43,22 @@ public class ForumService {
     }
 
     public List<Integer> getListThread(String short_name,String since, String order, Integer limit){
-        String sql ="SELECT `id` FROM `Thread`  " +
+        String sql ="SELECT `Thread`.`id` FROM `Thread`  " +
                 "JOIN `Forum` ON `Thread`.`forum` = `Forum`.`short_name`" +
-                "AND `Forum`.`short_name` = ? AND `Thread`.TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-                "ORDER BY `date` ? ";
-        List<Integer> result = new ArrayList<>();
-        if(limit>0){
-            template.queryForList(sql+"LIMIT ?;",result,short_name,since,order,limit);
-        }else {
-            template.queryForList(sql+";", result, short_name,since,order);
-        }
-        return result;
+                "AND `Forum`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
+                "ORDER BY `Thread`.`date` " + order;
+        String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+        return template.queryForList(sql+sqlLimit, Integer.class, short_name,since);
     }
 
-    public List<Integer> getListPost(String short_name,String since, String order, Integer limit){
-        String sql ="SELECT `id` FROM `Post`  " +
+    public List<Integer> getListPost(String short_name, String since, String order, Integer limit){
+        String sql ="SELECT `Post`.`id` FROM `Post`  " +
                 "JOIN `Forum` ON `Post`.`forum` = `Forum`.`short_name`" +
-                "AND `Forum`.`short_name` = ? AND `Thread`.TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-                "ORDER BY `date` ? ";
-        List<Integer> result = new ArrayList<>();
-        if(limit>0){
-            template.queryForList(sql+"LIMIT ?;",result,short_name,since,order,limit);
-        }else {
-            template.queryForList(sql+";", result, short_name,since,order);
-        }
-        return result;
+                "AND `Forum`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
+                "ORDER BY `Post`.`date` " + order;
+        String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+        return template.queryForList(sql+sqlLimit, Integer.class, short_name,since);
+
     }
 
     private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = new RowMapper<ForumDetail>() {

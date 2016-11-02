@@ -136,7 +136,7 @@ public class ThreadController {
         if (StringUtils.isEmpty(short_name)){
             threadListId = forumService.getListThread(short_name,since,_order,limit);
         }else {
-            threadListId = userService.getListThread(email,since,_order,limit);
+            threadListId = userService.getListThread(email,_order,since,limit);
         }
         List<ThreadDetail> threadDetailsLists = new ArrayList<>();
         for (int i =0 ; i < threadListId.size();i++){

@@ -114,13 +114,12 @@ final public class UserController {
         if(!"desc".equalsIgnoreCase(_order)&&!"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();
         Integer _since_id = (since_id==null)?0:since_id;
-        Integer _limit = (limit == null)?0:limit;
 
         UserDetailAll userDetail = userService.profilAll(email);
         if (StringUtils.isEmpty(userDetail.getEmail())) {
             return Result.notFound();
         }
-        userDetail.setFollowing(userService.getListFollowing(email,_order,_since_id,_limit));
+        userDetail.setFollowing(userService.getListFollowing(email,_order,_since_id,limit));
         userDetail.setSubscriptions(userService.subscriptions(userDetail.getEmail()));
         userDetail.setFollowers(userService.followers(userDetail.getEmail()));
 

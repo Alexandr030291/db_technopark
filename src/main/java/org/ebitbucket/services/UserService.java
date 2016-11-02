@@ -78,35 +78,25 @@ public class UserService {
 	}
 
 	public List<String> getListFollowers(String email, String order, Integer since_id, Integer limit) {
-		List<String> result = new ArrayList<>();
 		String sql = "SELECT `follower` " +
 				"FROM `Followers` " +
 				"JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
 				"AND `Followers`.`followee` = ?  " +
 				"AND `User`.`id` = ? " +
-				"ORDER BY `USER`.`name` ?";
-		if (limit > 0) {
-			template.queryForList(sql + "LIMIT ?;", result, email, since_id, order, limit);
-		} else {
-			template.queryForList(sql + ";", result, email, since_id, order);
-		}
-		return result;
+				"ORDER BY `USER`.`name` " + order;
+		String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+		return template.queryForList(sql+sqlLimit, String.class, email,since_id);
 	}
 
     public List<String> getListFollowing(String email, String order, Integer since_id, Integer limit){
-        List<String> result = new ArrayList<>();
         String sql =    "SELECT `followee` " +
                 "FROM `Followers` " +
                 "JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
                 "AND `Followers`.`follower` = ?  " +
                 "AND `User`.`id` = ? " +
-                "ORDER BY `USER`.`name` ?";
-        if(limit>0){
-            template.queryForList(sql+"LIMIT ?;",result,email,since_id,order,limit);
-        }else {
-            template.queryForList(sql+";", result, email,since_id,order);
-        }
-        return result;
+                "ORDER BY `USER`.`name` " + order;
+		String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+		return template.queryForList(sql+sqlLimit, String.class, email,since_id);
     }
 
 
@@ -119,28 +109,18 @@ public class UserService {
         String sql ="SELECT `id` " +
                     "FROM `Post` " +
                     "WHERE `user` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-                    "ORDER BY `date` ? ";
-        List<Integer> result = new ArrayList<>();
-        if(limit>0){
-            template.queryForList(sql+"LIMIT ?;",result,email,since,order,limit);
-        }else {
-            template.queryForList(sql+";", result, email,since,order);
-        }
-        return result;
+                    "ORDER BY `date` ?" + order;
+		String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+		return template.queryForList(sql+sqlLimit, Integer.class, email,since);
     }
 
     public List<Integer> getListThread(String email, String order, String since, Integer limit){
-        String sql ="SELECT `id` FROM `Thread` " +
+        String sql ="SELECT `Thread`.`id` FROM `Thread` " +
                     "JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`email`"+
-                    "AND `UserProfile`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-                    "ORDER BY `date` ? ";
-        List<Integer> result = new ArrayList<>();
-        if(limit>0){
-            template.queryForList(sql+"LIMIT ?;",result,email,since,order,limit);
-        }else {
-            template.queryForList(sql+";", result, email,since,order);
-        }
-        return result;
+                    "AND `UserProfile`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
+                    "ORDER BY `Thread`.`date` " + order;
+		String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+        return template.queryForList(sql+sqlLimit, Integer.class, email,since);
     }
 
     private static final RowMapper<UserDetail> USER_DETAIL_ROWMAPPER = new RowMapper<UserDetail>() {
