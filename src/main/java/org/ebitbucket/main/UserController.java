@@ -6,6 +6,7 @@ import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.User.UserDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.User.UserProfile;
+import org.ebitbucket.model.User.UserProfileUpdate;
 import org.ebitbucket.services.PostService;
 import org.ebitbucket.services.UserService;
 import org.springframework.util.StringUtils;
@@ -66,11 +67,13 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/updateProfile", method = RequestMethod.POST)
-    public Result updateProfile(@RequestBody UserProfile body){
-        if (userService.updateProfile(body.getEmail(),body.getName(),body.getAbout())==0) {
+    public Result updateProfile(@RequestBody UserProfileUpdate body){
+        if (StringUtils.isEmpty(body.getUser()))
+            return Result.unkownError();
+        if (userService.updateProfile(body.getUser(),body.getName(),body.getAbout())==0) {
             return Result.notFound();
         }
-        return Result.ok(userService.profileAll(body.getEmail()));
+        return Result.ok(userService.profileAll(body.getUser()));
     }
 
     @RequestMapping(path = "db/api/user/listFollowers", method = RequestMethod.GET)

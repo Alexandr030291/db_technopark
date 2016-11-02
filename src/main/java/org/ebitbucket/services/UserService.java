@@ -73,7 +73,7 @@ public class UserService {
 	}
 
 	public int updateProfile(String email, String name, String about) {
-		String sql = "UPDATE `UserProfile` SET `about` = ? , `name` = ? WHERE `email` = ?;";
+		String sql = "UPDATE `UserProfile` SET `about` = ?, `name` = ? WHERE `email` = ?;";
 		return template.update(sql, about, name, email);
 	}
 
