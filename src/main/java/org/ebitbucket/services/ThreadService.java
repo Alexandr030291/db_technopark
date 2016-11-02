@@ -44,7 +44,7 @@ public class ThreadService {
     public boolean subscribe(Integer thread, String user){
         try {
             String sql="INSERT INTO `Subscriptions` (`user`, `thread`) VALUES (?, ?);";
-            template.update(sql,thread,user);
+            template.update(sql,user,thread);
             return true;
         }catch (DataIntegrityViolationException dive){
             return false;
