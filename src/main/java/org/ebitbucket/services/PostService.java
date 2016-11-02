@@ -96,6 +96,6 @@ public class PostService {
             rs.getBoolean("isEdited"),
             rs.getBoolean("isHighlighted"),
             rs.getBoolean("isSpam"),
-            rs.getInt("likes"),
-            rs.getInt("dislikes"));
+            rs.getInt("dislikes"),
+            rs.getInt("likes"));
 }

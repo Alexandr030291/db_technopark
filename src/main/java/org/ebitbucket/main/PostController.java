@@ -156,7 +156,7 @@ public class PostController {
     @RequestMapping(path = "db/api/post/vote", method = RequestMethod.POST)
     public Result  ratePost(@RequestBody Vote body) {
         String field = Functions.getFieldVote(body.getVote());
-        if (field == null||!(Objects.equals(field, "likes") ||Objects.equals(field,"dislikes"))) {
+        if (field == null) {
             return Result.incorrectRequest();
         }
         if (postService.vote(body.getPost(),field)==0)

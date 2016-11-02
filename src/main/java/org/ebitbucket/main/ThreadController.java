@@ -149,7 +149,7 @@ public class ThreadController {
     @RequestMapping(path = "db/api/thread/vote", method = RequestMethod.POST)
     public Result  ratePost(@RequestBody Vote body) {
         String field = Functions.getFieldVote(body.getVote());
-        if (field == null||!(Objects.equals(field, "likes") ||Objects.equals(field,"dislikes"))) {
+        if (field == null) {
             return Result.incorrectRequest();
         }
         if (threadService.vote(body.getThread(),field)==0)
