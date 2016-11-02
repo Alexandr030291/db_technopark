@@ -60,7 +60,7 @@ public class PostController {
     public Result postDetails(@RequestParam(name = "post") Integer post,
                                  @RequestParam(name = "related", required = false) String[] related) {
 
-        if (!Functions.isArrayValid(related, "user", "thread", "forum")||post==null) {
+        if (!Functions.isArrayValid(related, "user", "thread", "forum")||post==null||!Functions.correctId(post)) {
             return Result.incorrectRequest();
         }
         PostDetails postDetails = getPostDetail(post,related);

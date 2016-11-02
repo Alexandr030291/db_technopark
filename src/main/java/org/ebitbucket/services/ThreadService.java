@@ -97,12 +97,14 @@ public class ThreadService {
 
     public List<Integer> getListPostInParentTree(Integer id, String since,String order, Integer limit){
         String LIMIT = (limit!=null)?" LIMIT "+limit+"":"";
-        String sql ="SELECT `Post`.`id` FROM `Post` WHERE `parent` IN " +
+        String sql ="SELECT `Post`.`id` FROM `Post` JOIN " +
                     "(SELECT `Post`.`id` FROM `Post` " +
-                    "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id` AND `Post`.`parent` = NULL " +
+                    "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id` " +
+                    "AND `Post`.`parent` = NULL " +
                     "AND `Thread`.`id` = ? " +
-                    "ORDER BY `Post`.`parent` "+order + LIMIT+ ")"+
                     "AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
+                    "ORDER BY `Post`.`parent` "+order + LIMIT+ ")"+
+                    "AS Selection ON `Post`.`id` = Selection.`id` OR `Post`.`parent` = Selection.`id`"+
                     "ORDER BY `Post`.`mpath` " + order + ";";
         return template.queryForList(sql, Integer.class, id,since);
     }

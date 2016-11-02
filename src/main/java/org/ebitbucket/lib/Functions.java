@@ -46,4 +46,9 @@ public class Functions {
         }
         return field;
     }
+
+
+    public static boolean correctId(Integer id){
+        return !(id == null || id == 0);
+    }
 }
