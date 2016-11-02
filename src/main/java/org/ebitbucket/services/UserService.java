@@ -73,17 +73,17 @@ public class UserService {
 	}
 
 	public int updateProfile(String email, String name, String about) {
-		String sql = "UPDATE `UserProfile` SET `name` = ?, `about` = ? WHERE `email` = ?;";
-		return template.update(sql, name, about, email);
+		String sql = "UPDATE `UserProfile` SET `about` = ? , `name` = ? WHERE `email` = ?;";
+		return template.update(sql, about, name, email);
 	}
 
 	public List<String> getListFollowers(String email, String order, Integer since_id, Integer limit) {
 		String sql = "SELECT `follower` " +
-				"FROM `Followers` " +
-				"JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
-				"AND `Followers`.`followee` = ?  " +
-				"AND `User`.`id` = ? " +
-				"ORDER BY `USER`.`name` " + order;
+					 "FROM `Followers` " +
+					 "JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
+					 "AND `Followers`.`followee` = ?  " +
+				 	 "AND `User`.`id` = ? " +
+				 	 "ORDER BY `USER`.`name` " + order;
 		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
 	}

@@ -96,10 +96,10 @@ public class ThreadController {
 
     @RequestMapping(path = "db/api/forum/listThreads", method = RequestMethod.GET)
     public Result listForumThreads(@RequestParam(name = "forum") String short_name,
-                                      @RequestParam(name = "limit", required = false) Integer limit,
-                                      @RequestParam(name = "order", required = false) String order,
-                                      @RequestParam(name = "since", required = false) String since,
-                                      @RequestParam(name = "related", required = false) String[] related) {
+                                   @RequestParam(name = "limit", required = false) Integer limit,
+                                   @RequestParam(name = "order", required = false) String order,
+                                   @RequestParam(name = "since", required = false) String since,
+                                   @RequestParam(name = "related", required = false) String[] related) {
 
         if (StringUtils.isEmpty(short_name)|| (limit != null && limit < 0) || StringUtils.isEmpty(since)) {
             return Result.invalidReques();
@@ -121,10 +121,10 @@ public class ThreadController {
 
     @RequestMapping(path = "db/api/thread/list", method = RequestMethod.GET)
     public Result listThreads(@RequestParam(name = "forum", required = false) String short_name,
-                                 @RequestParam(name = "user", required = false) String email,
-                                 @RequestParam(name = "limit", required = false) Integer limit,
-                                 @RequestParam(name = "order", required = false) String order,
-                                 @RequestParam(name = "since", required = false) String since) {
+                              @RequestParam(name = "user", required = false) String email,
+                              @RequestParam(name = "limit", required = false) Integer limit,
+                              @RequestParam(name = "order", required = false) String order,
+                              @RequestParam(name = "since", required = false) String since) {
         if (StringUtils.isEmpty(short_name)==StringUtils.isEmpty(email)|| (limit != null && limit < 0) || StringUtils.isEmpty(since)) {
             return Result.invalidReques();
         }

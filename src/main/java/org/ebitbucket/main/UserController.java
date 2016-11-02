@@ -70,7 +70,6 @@ final public class UserController {
         if (userService.updateProfile(body.getEmail(),body.getName(),body.getAbout())==0) {
             return Result.notFound();
         }
-        UserDetail userDetail = userService.profile(body.getEmail());
         return Result.ok(userService.profileAll(body.getEmail()));
     }
 
