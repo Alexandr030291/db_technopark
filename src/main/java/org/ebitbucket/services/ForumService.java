@@ -61,15 +61,8 @@ public class ForumService {
 
     }
 
-    private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = new RowMapper<ForumDetail>() {
-
-        @Override
-        public ForumDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
-
-            return new ForumDetail(rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("short_name"),
-                    rs.getString("user"));
-        }
-    };
+    private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) -> new ForumDetail(rs.getInt("id"),
+            rs.getString("name"),
+            rs.getString("short_name"),
+            rs.getString("user"));
 }

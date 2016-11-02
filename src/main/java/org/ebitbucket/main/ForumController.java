@@ -48,7 +48,7 @@ final public class ForumController{
         }
 
         if (related != null && Arrays.asList(related).contains("user")) {
-            forumDetail.setUserDetail(userService.profilAll(forumDetail.getUser().toString()));
+            forumDetail.setUserDetail(userService.profileAll(forumDetail.getUser().toString()));
         }
 
         return Result.ok(forumDetail);

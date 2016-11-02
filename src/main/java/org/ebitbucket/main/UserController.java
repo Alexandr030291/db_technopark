@@ -3,6 +3,7 @@ package org.ebitbucket.main;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ebitbucket.model.Post.PostDetails;
+import org.ebitbucket.model.User.UserDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.User.UserProfile;
 import org.ebitbucket.services.PostService;
@@ -29,12 +30,12 @@ final public class UserController {
             return Result.invalidReques();
         if (userService.create(body.getEmail(),body.getName(),body.getUsername(),body.getAbout(),body.getIsAnonymous()) == -1)
             return Result.userAlreadyExists();
-        return Result.ok(userService.profil(body.getEmail()));
+        return Result.ok(userService.profile(body.getEmail()));
     }
 
     @RequestMapping(path = "db/api/user/details", method = RequestMethod.GET)
     public Result userDetails(@RequestParam(name = "user") String email) {
-        UserDetailAll userDetail = userService.profilAll(email);
+        UserDetailAll userDetail = userService.profileAll(email);
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
@@ -43,7 +44,7 @@ final public class UserController {
 
     @RequestMapping(path = "db/api/user/follow", method = RequestMethod.POST)
     public Result userFollow(@RequestBody FollowerRequesr body) {
-        UserDetailAll userDetail = userService.profilAll(body.getFollower());
+        UserDetailAll userDetail = userService.profileAll(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
@@ -54,7 +55,7 @@ final public class UserController {
 
     @RequestMapping(path = "db/api/user/unfollow", method = RequestMethod.POST)
     public Result userUnFollow(@RequestBody FollowerRequesr body) {
-        UserDetailAll userDetail = userService.profilAll(body.getFollower());
+        UserDetailAll userDetail = userService.profileAll(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
 
@@ -66,15 +67,11 @@ final public class UserController {
 
     @RequestMapping(path = "db/api/user/updateProfile", method = RequestMethod.POST)
     public Result updateProfile(@RequestBody UserProfile body){
-        UserDetailAll userDetail = userService.profilAll(body.getEmail());
-        if (StringUtils.isEmpty(userDetail.getEmail()))
+        if (userService.updateProfile(body.getEmail(),body.getName(),body.getAbout())==0) {
             return Result.notFound();
-
-        userService.updateProfil(body.getEmail(),body.getName(),body.getAbout());
-        userDetail.setAbout(body.getAbout());
-        userDetail.setName(body.getName());
-
-        return Result.ok(userDetail);
+        }
+        UserDetail userDetail = userService.profile(body.getEmail());
+        return Result.ok(userService.profileAll(body.getEmail()));
     }
 
     @RequestMapping(path = "db/api/user/listFollowers", method = RequestMethod.GET)
@@ -91,7 +88,7 @@ final public class UserController {
         Integer _since_id = (since_id==null)?0:since_id;
         Integer _limit = (limit == null)?0:limit;
 
-        UserDetailAll userDetail = userService.profilAll(email);
+        UserDetailAll userDetail = userService.profileAll(email);
         if (StringUtils.isEmpty(userDetail.getEmail())) {
             return Result.notFound();
         }
@@ -115,7 +112,7 @@ final public class UserController {
             return Result.incorrectRequest();
         Integer _since_id = (since_id==null)?0:since_id;
 
-        UserDetailAll userDetail = userService.profilAll(email);
+        UserDetailAll userDetail = userService.profileAll(email);
         if (StringUtils.isEmpty(userDetail.getEmail())) {
             return Result.notFound();
         }

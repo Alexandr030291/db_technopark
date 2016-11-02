@@ -32,19 +32,19 @@ public class UserService {
 		}
 	}
 
-    public UserDetail profil(String email) {
-        String sql = "SELECT * FROM `UserProfile` WHERE `email` = ?;";
-        return template.queryForObject(sql, USER_DETAIL_ROWMAPPER, email);
-    }
+	public UserDetail profile(String email) {
+		String sql = "SELECT * FROM `UserProfile` WHERE `email` = ?;";
+		return template.queryForObject(sql, USER_DETAIL_ROWMAPPER, email);
+	}
 
-	public UserDetailAll profilAll(String email) {
+	public UserDetailAll profileAll(String email) {
 		String sql = "SELECT * FROM `UserProfile` WHERE `email` = ?;";
 		return template.queryForObject(sql, USER_DETAIL_ALL_ROW_MAPPER, email);
 	}
 
 	public List<String> following(String email) {
 		String sql = "SELECT `followee` FROM `Followers` WHERE `follower` = ?;";
-		return  template.queryForList(sql, String.class, email);
+		return template.queryForList(sql, String.class, email);
 	}
 
 	public List<String> followers(String email) {
@@ -72,9 +72,9 @@ public class UserService {
 		return template.update(sql, follower, followee);
 	}
 
-	public void updateProfil(String email, String name, String about) {
-		String sql = "UPDATE `User` SET `name` = ?, `about` = ? WHERE `email` = ?;";
-		template.update(sql, name, about, email);
+	public int updateProfile(String email, String name, String about) {
+		String sql = "UPDATE `UserProfile` SET `name` = ?, `about` = ? WHERE `email` = ?;";
+		return template.update(sql, name, about, email);
 	}
 
 	public List<String> getListFollowers(String email, String order, Integer since_id, Integer limit) {
@@ -84,76 +84,67 @@ public class UserService {
 				"AND `Followers`.`followee` = ?  " +
 				"AND `User`.`id` = ? " +
 				"ORDER BY `USER`.`name` " + order;
-		String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
-		return template.queryForList(sql+sqlLimit, String.class, email,since_id);
+		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
+		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
 	}
 
-    public List<String> getListFollowing(String email, String order, Integer since_id, Integer limit){
-        String sql =    "SELECT `followee` " +
-                "FROM `Followers` " +
-                "JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
-                "AND `Followers`.`follower` = ?  " +
-                "AND `User`.`id` = ? " +
-                "ORDER BY `USER`.`name` " + order;
-		String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
-		return template.queryForList(sql+sqlLimit, String.class, email,since_id);
-    }
+	public List<String> getListFollowing(String email, String order, Integer since_id, Integer limit) {
+		String sql = "SELECT `followee` " +
+				"FROM `Followers` " +
+				"JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
+				"AND `Followers`.`follower` = ?  " +
+				"AND `User`.`id` = ? " +
+				"ORDER BY `USER`.`name` " + order;
+		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
+		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
+	}
 
 
-    public int getCount(){
-        String sql = "SELECT count(*) FROM `User`";
-        return template.queryForObject(sql, Integer.class);
-    }
+	public int getCount() {
+		String sql = "SELECT count(*) FROM `User`";
+		return template.queryForObject(sql, Integer.class);
+	}
 
-    public List<Integer> getListPost(String email, String order, String since, Integer limit){
-        String sql ="SELECT `id` " +
-                    "FROM `Post` " +
-                    "WHERE `user` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-                    "ORDER BY `date` ?" + order;
-		String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
-		return template.queryForList(sql+sqlLimit, Integer.class, email,since);
-    }
+	public List<Integer> getListPost(String email, String order, String since, Integer limit) {
+		String sql = "SELECT `id` " +
+				"FROM `Post` " +
+				"WHERE `user` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
+				"ORDER BY `date` ?" + order;
+		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
+		return template.queryForList(sql + sqlLimit, Integer.class, email, since);
+	}
 
-    public List<Integer> getListThread(String email, String order, String since, Integer limit){
-        String sql ="SELECT `Thread`.`id` FROM `Thread` " +
-                    "JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`email`"+
-                    "AND `UserProfile`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
-                    "ORDER BY `Thread`.`date` " + order;
-		String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, Integer.class, email,since);
-    }
+	public List<Integer> getListThread(String email, String order, String since, Integer limit) {
+		String sql = "SELECT `Thread`.`id` FROM `Thread` " +
+				"JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`email`" +
+				"AND `UserProfile`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
+				"ORDER BY `Thread`.`date` " + order;
+		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
+		return template.queryForList(sql + sqlLimit, Integer.class, email, since);
+	}
 
-    private static final RowMapper<UserDetail> USER_DETAIL_ROWMAPPER = new RowMapper<UserDetail>() {
+	private static final RowMapper<UserDetail> USER_DETAIL_ROWMAPPER = (rs, rowNum) -> new UserDetail(rs.getInt("id"),
+			rs.getString("username"),
+			rs.getString("name"),
+			rs.getString("email"),
+			rs.getString("about"),
+			rs.getBoolean("isAnonymous"));
+/*
+Integer id, String username, String name, String email,  String about, Boolean isAnonymous
+ */
+	private final RowMapper<UserDetailAll> USER_DETAIL_ALL_ROW_MAPPER = (rs, rowNum) -> {
 
-        @Override
-        public UserDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
-
-            return new UserDetail(rs.getInt("id"),
-                    rs.getString("username"),
-                    rs.getString("name"),
-                    rs.getString("email"),
-                    rs.getString("about"),
-                    rs.getBoolean("isAnonymous"));
-        }
-    };
-
-	private final RowMapper<UserDetailAll> USER_DETAIL_ALL_ROW_MAPPER = new RowMapper<UserDetailAll>() {
-
-		@Override
-		public UserDetailAll mapRow(ResultSet rs, int rowNum) throws SQLException {
-
-            String email = rs.getString("email");
-            UserDetailAll userDetailAll = new UserDetailAll(rs.getInt("id"),
-                    rs.getString("username"),
-                    rs.getString("name"),
-                    rs.getString("email"),
-                    rs.getString("about"),
-                    rs.getBoolean("isAnonymous"));
-            userDetailAll.setFollowers(followers(email));
-            userDetailAll.setFollowing(following(email));
-            userDetailAll.setSubscriptions(subscriptions(email));
-			return userDetailAll;
-		}
+		String email = rs.getString("email");
+		UserDetailAll userDetailAll = new UserDetailAll(rs.getInt("id"),
+				rs.getString("username"),
+				rs.getString("name"),
+				rs.getString("email"),
+				rs.getString("about"),
+				rs.getBoolean("isAnonymous"));
+		userDetailAll.setFollowers(followers(email));
+		userDetailAll.setFollowing(following(email));
+		userDetailAll.setSubscriptions(subscriptions(email));
+		return userDetailAll;
 	};
 
 }

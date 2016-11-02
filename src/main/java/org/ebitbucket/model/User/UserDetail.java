@@ -18,7 +18,12 @@ public class UserDetail {
 
 
     public UserDetail(Integer id, String username, String name, String email,  String about, Boolean isAnonymous) {
-
+        this.username = username;
+        this.about = about;
+        this.name = name;
+        this.email = email;
+        this.id =0;// id;
+        this.isAnonymous = isAnonymous;
     }
 
     public void setAbout(String about) {

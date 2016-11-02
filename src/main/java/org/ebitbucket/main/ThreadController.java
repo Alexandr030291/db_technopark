@@ -7,7 +7,6 @@ import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.MessageUpdate;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.Tread.ThreadRequest;
-import org.ebitbucket.model.User.UserDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.Vote;
 import org.ebitbucket.services.ForumService;
@@ -83,6 +82,11 @@ public class ThreadController {
         if (thread==null) {
             return Result.invalidReques();
         }
+
+        if (!Functions.correctId(thread))
+            return Result.notFound();
+
+
         if (Functions.isArrayValid(related, "user","forumService")) {
             return Result.incorrectRequest();
         }
@@ -197,43 +201,6 @@ public class ThreadController {
         return Result.ok(threadDetail);
     }
 
-    @RequestMapping(path = "db/api/thread/listPosts", method = RequestMethod.GET)
-    public Result  listPostsInThread(@RequestParam(name = "thread") Integer thread,
-                                        @RequestParam(name = "limit", required = false) Integer limit,
-                                        @RequestParam(name = "sort", required = false) String sort,
-                                        @RequestParam(name = "order", required = false) String order,
-                                        @RequestParam(name = "since", required = false) String since) {
-        if (StringUtils.isEmpty(sort)) {
-            sort = "flat";
-        }
-        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
-        if (    !"desc".equalsIgnoreCase(_order) &&
-                !"asc".equalsIgnoreCase(_order)||
-                (limit != null && limit < 0) ||
-                StringUtils.isEmpty(since)){
-            return Result.incorrectRequest();
-        }
-        List<Integer> threadListId = new ArrayList<>();
-        switch (sort){
-            case "flat":
-                threadListId  = threadService.getListPost(thread,since,_order,limit);
-                break;
-            case "tree":
-                threadListId  = threadService.getListPostInTree(thread,since,_order,limit);
-                break;
-            case "parent_tree":
-                threadListId  = threadService.getListPostInParentTree(thread,since,_order,limit);
-                break;
-            default:
-                Result.incorrectRequest();
-        }
-        List<ThreadDetail> threadDetailsLists = new ArrayList<>();
-        for (int i =0 ; i < threadListId.size();i++){
-            threadDetailsLists.add(i,getDetails(i,null));
-        }
-        return Result.ok(threadDetailsLists);
-    }
-
     public ThreadDetail getDetails(Integer id, String[] related){
         ThreadDetail threadDetail = threadService.detail(id);
         if (threadDetail != null) {
@@ -257,7 +224,7 @@ public class ThreadController {
                 }
 
                 if (Arrays.asList(related).contains("user")) {
-                    userDetail = userService.profilAll(user);
+                    userDetail = userService.profileAll(user);
                     result++;
                 }
             }

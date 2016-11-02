@@ -49,6 +49,6 @@ public class Functions {
 
 
     public static boolean correctId(Integer id){
-        return !(id == null || id == 0);
+        return !(id == null || id <= 0);
     }
 }

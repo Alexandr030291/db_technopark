@@ -61,9 +61,9 @@ public class ThreadService {
         }
     }
 
-    public ThreadDetail detail(Integer id){
-        String sql="SELECT * FROM `Thread` WHERE `id` = ?;";
-       return template.queryForObject(sql,THREAD_DETAIL_ROW_MAPPER,id);
+    public ThreadDetail detail(Integer id) {
+        String sql = "SELECT * FROM `Thread` WHERE `Thread`.`id` = ?;";
+        return template.queryForObject(sql, THREAD_DETAIL_ROW_MAPPER, id);
     }
 
     public int getCountPost(Integer id){
@@ -147,22 +147,15 @@ public class ThreadService {
         return template.update(sql,message,slug,id);
     }
 
-    private static final RowMapper<ThreadDetail> THREAD_DETAIL_ROW_MAPPER = new RowMapper<ThreadDetail>() {
-
-        @Override
-        public ThreadDetail mapRow(ResultSet rs, int rowNum) throws SQLException {
-
-            return new ThreadDetail(rs.getInt("id"),
-                    rs.getString("forum"),
-                    rs.getString("user"),
-                    rs.getString("title"),
-                    rs.getString("message"),
-                    rs.getString("slug"),
-                    Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
-                    rs.getBoolean("isClosed"),
-                    rs.getBoolean("isDeleted"),
-                    rs.getInt("likes"),
-                    rs.getInt("dislikes"));
-        }
-    };
+    private static final RowMapper<ThreadDetail> THREAD_DETAIL_ROW_MAPPER = (rs, rowNum) -> new ThreadDetail(rs.getInt("id"),
+            rs.getString("forum"),
+            rs.getString("user"),
+            rs.getString("title"),
+            rs.getString("message"),
+            rs.getString("slug"),
+            Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
+            rs.getBoolean("isClosed"),
+            rs.getBoolean("isDeleted"),
+            rs.getInt("likes"),
+            rs.getInt("dislikes"));
 }

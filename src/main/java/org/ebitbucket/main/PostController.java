@@ -60,9 +60,13 @@ public class PostController {
     public Result postDetails(@RequestParam(name = "post") Integer post,
                                  @RequestParam(name = "related", required = false) String[] related) {
 
-        if (!Functions.isArrayValid(related, "user", "thread", "forum")||post==null||!Functions.correctId(post)) {
+        if (!Functions.isArrayValid(related, "user", "thread", "forum")||post==null) {
             return Result.incorrectRequest();
         }
+
+        if (!Functions.correctId(post))
+            return Result.notFound();
+
         PostDetails postDetails = getPostDetail(post,related);
         if(postDetails==null){
             return Result.notFound();
@@ -160,6 +164,49 @@ public class PostController {
         return Result.ok(postDetails);
     }
 
+    @RequestMapping(path = "db/api/thread/listPosts", method = RequestMethod.GET)
+    public Result  listPostsInThread(@RequestParam(name = "thread") Integer thread,
+                                     @RequestParam(name = "limit", required = false) Integer limit,
+                                     @RequestParam(name = "sort", required = false) String sort,
+                                     @RequestParam(name = "order", required = false) String order,
+                                     @RequestParam(name = "since", required = false) String since) {
+        if (StringUtils.isEmpty(sort)) {
+            sort = "flat";
+        }
+
+        if (!Functions.correctId(thread))
+            return Result.notFound();
+
+        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
+        if (    !"desc".equalsIgnoreCase(_order) &&
+                !"asc".equalsIgnoreCase(_order)||
+                (limit != null && limit < 0) ||
+                StringUtils.isEmpty(since)){
+            return Result.incorrectRequest();
+        }
+        List<Integer> threadListId = new ArrayList<>();
+        switch (sort){
+            case "flat":
+                threadListId  = threadService.getListPost(thread,since,_order,limit);
+                break;
+            case "tree":
+                threadListId  = threadService.getListPostInTree(thread,since,_order,limit);
+                break;
+            case "parent_tree":
+                threadListId  = threadService.getListPostInParentTree(thread,since,_order,limit);
+                break;
+            default:
+                Result.incorrectRequest();
+        }
+        List<PostDetails> postDetailsList = new ArrayList<>();
+        Integer post;
+        for (int i =0 ; i < threadListId.size();i++){
+            post = threadListId.get(i);
+            postDetailsList.add(i,getPostDetail(post,null));
+        }
+        return Result.ok(postDetailsList);
+    }
+
     private PostDetails getPostDetail(int id, String[] related){
         PostDetails postDetails = postService.details(id);
         if (postDetails!=null){
@@ -189,7 +236,7 @@ public class PostController {
                 }
 
                 if (Arrays.asList(related).contains("user")) {
-                    userDetailAll=userService.profilAll(user);
+                    userDetailAll=userService.profileAll(user);
                     flag++;
                 }
 

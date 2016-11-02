@@ -84,25 +84,18 @@ public class PostService {
         return template.update(sql,vote,vote,id);
     }
 
-    private static final RowMapper<PostDetails> POST_DETAIL_ROW_MAPPER = new RowMapper<PostDetails>() {
-
-        @Override
-        public PostDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
-
-            return new PostDetails(rs.getInt("id"),
-                    rs.getString("forum"),
-                    rs.getString("user"),
-                    rs.getString("thread"),
-                    (rs.getString("parent")!=null)?rs.getInt("parent"):null,
-                    rs.getString("message"),
-                    Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
-                    rs.getBoolean("isApproved"),
-                    rs.getBoolean("isDeleted"),
-                    rs.getBoolean("isEdited"),
-                    rs.getBoolean("isHighlighted"),
-                    rs.getBoolean("isSpam"),
-                    rs.getInt("likes"),
-                    rs.getInt("dislikes"));
-        }
-    };
+    private static final RowMapper<PostDetails> POST_DETAIL_ROW_MAPPER = (rs, rowNum) -> new PostDetails(rs.getInt("id"),
+            rs.getString("forum"),
+            rs.getString("user"),
+            rs.getString("thread"),
+            (rs.getString("parent")!=null)?rs.getInt("parent"):null,
+            rs.getString("message"),
+            Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
+            rs.getBoolean("isApproved"),
+            rs.getBoolean("isDeleted"),
+            rs.getBoolean("isEdited"),
+            rs.getBoolean("isHighlighted"),
+            rs.getBoolean("isSpam"),
+            rs.getInt("likes"),
+            rs.getInt("dislikes"));
 }
