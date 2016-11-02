@@ -78,19 +78,15 @@ public class ThreadController {
 
     @RequestMapping(path = "db/api/thread/details", method = RequestMethod.GET)
     public Result threadDetails(@RequestParam(name = "thread") Integer thread,
-                                   @RequestParam(name = "related", required = false) String[] related) {
-        if (thread==null) {
-            return Result.invalidReques();
-        }
-
+                                @RequestParam(name = "related", required = false) String[] related) {
         if (!Functions.correctId(thread))
             return Result.notFound();
 
 
-        if (Functions.isArrayValid(related, "user","forumService")) {
+        if (!Functions.isArrayValid(related, "user","forum")) {
             return Result.incorrectRequest();
         }
-        ThreadDetail threadDetail= getDetails(thread,related);
+        ThreadDetail threadDetail = getDetails(thread,related);
         if (threadDetail == null)
             return Result.notFound();
 
@@ -248,7 +244,7 @@ public class ThreadController {
         }
         return threadDetail;
     }
-    private class Subscription{
+    private static class Subscription{
         private final Integer thread;
         private final String user;
 
