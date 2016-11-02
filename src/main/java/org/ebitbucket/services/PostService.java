@@ -87,7 +87,7 @@ public class PostService {
     private static final RowMapper<PostDetails> POST_DETAIL_ROW_MAPPER = (rs, rowNum) -> new PostDetails(rs.getInt("id"),
             rs.getString("forum"),
             rs.getString("user"),
-            rs.getString("thread"),
+            rs.getInt("thread"),
             (rs.getString("parent")!=null)?rs.getInt("parent"):null,
             rs.getString("message"),
             Functions.DATE_FORMAT.format(rs.getTimestamp("date")),

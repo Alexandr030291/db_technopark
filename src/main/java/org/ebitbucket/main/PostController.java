@@ -102,10 +102,10 @@ public class PostController {
 
     @RequestMapping(path = "db/api/post/list", method = RequestMethod.GET)
     public Result listPosts(@RequestParam(name = "forum", required = false) String short_name,
-                                    @RequestParam(name = "thread", required = false) Integer thread,
-                                    @RequestParam(name = "limit", required = false) Integer limit,
-                                    @RequestParam(name = "order", required = false) String order,
-                                    @RequestParam(name = "since", required = false) String since) {
+                            @RequestParam(name = "thread", required = false) Integer thread,
+                            @RequestParam(name = "limit", required = false) Integer limit,
+                            @RequestParam(name = "order", required = false) String order,
+                            @RequestParam(name = "since", required = false) String since) {
 
         if (StringUtils.isEmpty(short_name)==(thread==null)|| (limit != null && limit < 0) || StringUtils.isEmpty(since)) {
             return Result.invalidReques();
