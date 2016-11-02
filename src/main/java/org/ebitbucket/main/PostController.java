@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class PostController {
@@ -155,7 +156,7 @@ public class PostController {
     @RequestMapping(path = "db/api/post/vote", method = RequestMethod.POST)
     public Result  ratePost(@RequestBody Vote body) {
         String field = Functions.getFieldVote(body.getVote());
-        if (field == null) {
+        if (field == null||!(Objects.equals(field, "likes") ||Objects.equals(field,"dislikes"))) {
             return Result.incorrectRequest();
         }
         if (postService.vote(body.getPost(),field)==0)

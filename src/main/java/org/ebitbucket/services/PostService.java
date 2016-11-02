@@ -80,8 +80,8 @@ public class PostService {
     }
 
     public int vote(int id, String vote){
-        String sql = "UPDATE `Post` SET ? = ? + 1 FALSE WHERE `id` = ?;";
-        return template.update(sql,vote,vote,id);
+        String sql = "UPDATE `Post` SET `" +vote+ "` =  `" +vote+ "` + 1 WHERE `id` = ?;";
+        return template.update(sql,id);
     }
 
     private static final RowMapper<PostDetails> POST_DETAIL_ROW_MAPPER = (rs, rowNum) -> new PostDetails(rs.getInt("id"),

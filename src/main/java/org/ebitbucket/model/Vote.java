@@ -23,7 +23,7 @@ public class Vote {
     @JsonCreator
     public Vote(@JsonProperty("vote") Integer vote,
                 @JsonProperty("post") Integer post,
-                @JsonProperty("post") Integer thread) {
+                @JsonProperty("thread") Integer thread) {
 
         this.vote = vote;
         this.post = post;

@@ -110,8 +110,8 @@ public class ThreadService {
     }
 
     public int vote(int id, String vote){
-        String sql = "UPDATE `Thread` SET ? = ? + 1 WHERE `id` = ?;";
-        return template.update(sql,vote,vote,id);
+        String sql = "UPDATE `Thread` SET `" +vote+ "` =  `" +vote+ "` + 1 WHERE `id` = ?;";
+        return template.update(sql,id);
     }
 
     public int close(int id){
