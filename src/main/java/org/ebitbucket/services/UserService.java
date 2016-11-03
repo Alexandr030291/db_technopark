@@ -77,10 +77,10 @@ public class UserService {
 	public List<String> getListFollowers(String email, String order, Integer since_id, Integer limit) {
 		String sql = "SELECT `follower` " +
 					 "FROM `Followers` " +
-					 "JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
+					 "JOIN `UserProfile` ON `Followers`.`follower`=`UserProfile`.`email` " +
 					 "AND `Followers`.`followee` = ?  " +
-				 	 "AND `User`.`id` = ? " +
-				 	 "ORDER BY `USER`.`name` " + order;
+				 	 "AND `UserProfile`.`id` >= ? " +
+				 	 "ORDER BY `UserProfile`.`name` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
 	}
@@ -88,10 +88,10 @@ public class UserService {
 	public List<String> getListFollowing(String email, String order, Integer since_id, Integer limit) {
 		String sql = "SELECT `followee` " +
 					 "FROM `Followers` " +
-					 "JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
+					 "JOIN `UserProfile` ON `Followers`.`follower`=`UserProfile`.`email` " +
 					 "AND `Followers`.`follower` = ?  " +
-					 "AND `User`.`id` = ? " +
-					 "ORDER BY `USER`.`name` " + order;
+					 "AND `UserProfile`.`id` >= ? " +
+					 "ORDER BY `UserProfile`.`name` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
 	}
@@ -107,7 +107,7 @@ public class UserService {
 						"FROM `Post` " +
 						"WHERE `user` = ? " +
 						"AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-						"ORDER BY `date` ?" + order;
+						"ORDER BY `date` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, Integer.class, email, since);
 	}

@@ -72,12 +72,6 @@ public class ForumService {
         return template.queryForList(sql+sqlLimit, String.class, short_name,since);
     }
 
-    /*
-    "SELECT DISTINCT email FROM user_profile JOIN post ON " +
-                        "user_profile.email = post.user_email JOIN forum ON post.forum = forum.short_name WHERE " +
-                        "short_name = ? AND user_profile.id >= ? ORDER BY user_profile.name "
-     */
-
     private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) -> new ForumDetail(rs.getInt("id"),
             rs.getString("name"),
             rs.getString("short_name"),

@@ -78,7 +78,7 @@ final public class UserController {
 
     @RequestMapping(path = "db/api/user/listFollowers", method = RequestMethod.GET)
     public Result listFollowers(
-            @RequestParam("email") String email,
+            @RequestParam("user") String user,
             @RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "order", required = false) String order,
             @RequestParam(name = "since_id", required = false) Integer since_id
@@ -90,20 +90,17 @@ final public class UserController {
         Integer _since_id = (since_id==null)?0:since_id;
         Integer _limit = (limit == null)?0:limit;
 
-        UserDetailAll userDetail = userService.profileAll(email);
-        if (StringUtils.isEmpty(userDetail.getEmail())) {
-            return Result.notFound();
+        List<String> listFollowers = userService.getListFollowers(user,_order,_since_id,_limit);
+        List<UserDetailAll> userDetailList = new ArrayList<>();
+        for (int i =0 ; i<listFollowers.size();i++){
+            userDetailList.add(i,userService.profileAll(listFollowers.get(i)));
         }
-        userDetail.setFollowers(userService.getListFollowers(email,_order,_since_id,_limit));
-        userDetail.setSubscriptions(userService.subscriptions(userDetail.getEmail()));
-        userDetail.setFollowing(userService.following(userDetail.getEmail()));
-
-        return Result.ok(userDetail);
+        return Result.ok(userDetailList);
     }
 
     @RequestMapping(path = "db/api/user/listFollowing", method = RequestMethod.GET)
     public Result listFollowing(
-            @RequestParam("email") String email,
+            @RequestParam("user") String user,
             @RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "order", required = false) String order,
             @RequestParam(name = "since_id", required = false) Integer since_id
@@ -114,18 +111,16 @@ final public class UserController {
             return Result.incorrectRequest();
         Integer _since_id = (since_id==null)?0:since_id;
 
-        UserDetailAll userDetail = userService.profileAll(email);
+        UserDetailAll userDetail = userService.profileAll(user);
         if (StringUtils.isEmpty(userDetail.getEmail())) {
             return Result.notFound();
         }
-        userDetail.setFollowing(userService.getListFollowing(email,_order,_since_id,limit));
-        userDetail.setSubscriptions(userService.subscriptions(userDetail.getEmail()));
-        userDetail.setFollowers(userService.followers(userDetail.getEmail()));
+        userDetail.setFollowing(userService.getListFollowing(user,_order,_since_id,limit));
 
         return Result.ok(userDetail);
     }
-/*
-    @RequestMapping(path = "db/api/forum/listUsers", method = RequestMethod.GET)
+
+    @RequestMapping(path = "db/api/user/listPosts", method = RequestMethod.GET)
     public Result listPost(   @RequestParam(name = "user") String email,
                               @RequestParam(name = "limit", required = false) Integer limit,
                               @RequestParam(name = "order", required = false) String order,
@@ -141,15 +136,13 @@ final public class UserController {
         List<PostDetails> postDetailsList = new ArrayList<>();
         PostDetails postDetails;
         for (int i =0 ; i < posts.size();i++){
-            postDetailsList.add(i, postService.details(i));
+            postDetailsList.add(i, postService.details(posts.get(i)));
             postDetails=postDetailsList.get(i);
             postDetails.setPoints(postDetails.getLikes()-postDetails.getDislikes());
         }
-
-List<String> userList = userService;
-        return Result.ok();
+        return Result.ok(postDetailsList);
     }
-*/
+
     public static class FollowerRequesr{
         private final String follower;
         private final String followee;
