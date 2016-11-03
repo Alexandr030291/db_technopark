@@ -67,7 +67,7 @@ public class PostService {
     public PostDetails details(int id){
         String sql="SELECT * FROM `Post` WHERE `id` = ?";
         return template.queryForObject(sql,POST_DETAIL_ROW_MAPPER,id);
-    };
+    }
 
     public int getCount(){
         String sql = "SELECT count(*) FROM `Post` WHERE `isDeleted` = FALSE;";

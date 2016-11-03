@@ -77,15 +77,15 @@ public class PostController {
 
     @RequestMapping(path = "db/api/forum/listPosts", method = RequestMethod.GET)
     public Result listForumPosts(@RequestParam(name = "forum") String short_name,
-                                         @RequestParam(name = "limit", required = false) Integer limit,
-                                         @RequestParam(name = "order", required = false) String order,
-                                         @RequestParam(name = "since", required = false) String since,
-                                         @RequestParam(name = "related", required = false) String[] related) {
+                                 @RequestParam(name = "limit", required = false) Integer limit,
+                                 @RequestParam(name = "order", required = false) String order,
+                                 @RequestParam(name = "since", required = false) String since,
+                                 @RequestParam(name = "related", required = false) String[] related) {
 
-        if (StringUtils.isEmpty(short_name)|| (limit != null && limit < 0) || StringUtils.isEmpty(since)) {
+        if (StringUtils.isEmpty(short_name)) {
             return Result.invalidReques();
         }
-        if (Functions.isArrayValid(related, "user", "forum","thread")) {
+        if (!Functions.isArrayValid(related, "user", "forum", "thread")) {
             return Result.incorrectRequest();
         }
         String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
@@ -95,7 +95,7 @@ public class PostController {
         List<Integer> postListId = forumService.getListPost(short_name,since,_order,limit);
         List<PostDetails> postDetailsList= new ArrayList<>();
         for (int i =0 ; i < postListId.size();i++){
-            postDetailsList.add(i,getPostDetail(i,related));
+            postDetailsList.add(i,getPostDetail(postListId.get(i),related));
         }
         return Result.ok(postDetailsList);
     }

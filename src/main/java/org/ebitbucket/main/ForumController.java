@@ -61,7 +61,7 @@ final public class ForumController{
     public Result listPost(   @RequestParam(name = "forum") String short_name,
                               @RequestParam(name = "limit", required = false) Integer limit,
                               @RequestParam(name = "order", required = false) String order,
-                              @RequestParam(name = "since", required = false) Integer since) {
+                              @RequestParam(name = "since_id", required = false) Integer since) {
         if (StringUtils.isEmpty(short_name) || (limit != null && limit < 0)) {
             return Result.incorrectRequest();
         }
