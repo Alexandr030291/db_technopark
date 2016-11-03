@@ -3,7 +3,6 @@ package org.ebitbucket.main;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ebitbucket.model.Post.PostDetails;
-import org.ebitbucket.model.User.UserDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.User.UserProfile;
 import org.ebitbucket.model.User.UserProfileUpdate;
@@ -44,7 +43,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/follow", method = RequestMethod.POST)
-    public Result userFollow(@RequestBody FollowerRequesr body) {
+    public Result userFollow(@RequestBody FollowerRequest body) {
         UserDetailAll userDetail = userService.profileAll(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
@@ -55,7 +54,7 @@ final public class UserController {
     }
 
     @RequestMapping(path = "db/api/user/unfollow", method = RequestMethod.POST)
-    public Result userUnFollow(@RequestBody FollowerRequesr body) {
+    public Result userUnFollow(@RequestBody FollowerRequest body) {
         UserDetailAll userDetail = userService.profileAll(body.getFollower());
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
@@ -111,13 +110,12 @@ final public class UserController {
             return Result.incorrectRequest();
         Integer _since_id = (since_id==null)?0:since_id;
 
-        UserDetailAll userDetail = userService.profileAll(user);
-        if (StringUtils.isEmpty(userDetail.getEmail())) {
-            return Result.notFound();
+        List<String> listFollowing = userService.getListFollowing(user,_order,_since_id,limit);
+        List<UserDetailAll> userDetailList = new ArrayList<>();
+        for (int i =0 ; i<listFollowing.size();i++){
+            userDetailList.add(i,userService.profileAll(listFollowing.get(i)));
         }
-        userDetail.setFollowing(userService.getListFollowing(user,_order,_since_id,limit));
-
-        return Result.ok(userDetail);
+        return Result.ok(userDetailList);
     }
 
     @RequestMapping(path = "db/api/user/listPosts", method = RequestMethod.GET)
@@ -143,12 +141,12 @@ final public class UserController {
         return Result.ok(postDetailsList);
     }
 
-    public static class FollowerRequesr{
+    public static class FollowerRequest {
         private final String follower;
         private final String followee;
 
         @JsonCreator
-        public FollowerRequesr(@JsonProperty("follower") String follower, @JsonProperty("followee") String followee){
+        public FollowerRequest(@JsonProperty("follower") String follower, @JsonProperty("followee") String followee){
             this.follower = follower;
             this.followee = followee;
         }

@@ -79,7 +79,7 @@ public class UserService {
 					 "FROM `Followers` " +
 					 "JOIN `UserProfile` ON `Followers`.`follower`=`UserProfile`.`email` " +
 					 "AND `Followers`.`followee` = ?  " +
-				 	 "AND `UserProfile`.`id` >= ? " +
+				 	 "AND `UserProfile`.`id` > ? " +
 				 	 "ORDER BY `UserProfile`.`name` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
@@ -88,9 +88,9 @@ public class UserService {
 	public List<String> getListFollowing(String email, String order, Integer since_id, Integer limit) {
 		String sql = "SELECT `followee` " +
 					 "FROM `Followers` " +
-					 "JOIN `UserProfile` ON `Followers`.`follower`=`UserProfile`.`email` " +
+					 "JOIN `UserProfile` ON `Followers`.`followee`=`UserProfile`.`email` " +
 					 "AND `Followers`.`follower` = ?  " +
-					 "AND `UserProfile`.`id` >= ? " +
+					 "AND `UserProfile`.`id` > ? " +
 					 "ORDER BY `UserProfile`.`name` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
