@@ -99,9 +99,9 @@ public class ThreadService {
         String LIMIT = (limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
         String sql ="SELECT `Post`.`root` FROM `Post` " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id` " +
-                    "AND `Post`.`parent` = NULL " +
+                    "AND `Post`.`id` = `Post`.`root` " +
                     "AND `Thread`.`id` = ? "  +
-                    "ORDER BY `Post`.`parent` "+order + LIMIT;
+                    "ORDER BY `Post`.`id` "+order + LIMIT;
         List<Integer> integerList=template.queryForList(sql,Integer.class,thread);
         String root ="(";
         for (Integer a_root : integerList) root += a_root.toString() + ", ";
