@@ -101,10 +101,10 @@ public class ThreadController {
                                    @RequestParam(name = "since", required = false) String since,
                                    @RequestParam(name = "related", required = false) String[] related) {
 
-        if (StringUtils.isEmpty(short_name)|| (limit != null && limit < 0) || StringUtils.isEmpty(since)) {
+        if (StringUtils.isEmpty(short_name)) {
             return Result.invalidReques();
         }
-        if (Functions.isArrayValid(related, "user", "forum")) {
+        if (!Functions.isArrayValid(related, "user", "forum")) {
             return Result.incorrectRequest();
         }
         String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
@@ -114,7 +114,7 @@ public class ThreadController {
         List<Integer> threadListId = forumService.getListThread(short_name,since,_order,limit);
         List<ThreadDetail> threadDetailsList = new ArrayList<>();
         for (int i =0 ; i < threadListId.size();i++){
-            threadDetailsList.add(i,getDetails(i,related));
+            threadDetailsList.add(i,getDetails(threadListId.get(i),related));
         }
         return Result.ok(threadDetailsList);
     }
