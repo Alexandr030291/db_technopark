@@ -177,6 +177,7 @@ public class PostController {
         if (!Functions.correctId(thread))
             return Result.notFound();
 
+        since = Functions.validSince(since);
         String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
         if (    !"desc".equalsIgnoreCase(_order) &&
                 !"asc".equalsIgnoreCase(_order)||
