@@ -110,7 +110,6 @@ public class PostController {
         if (StringUtils.isEmpty(short_name)==(thread==null)|| (limit != null && limit < 0) || StringUtils.isEmpty(since)) {
             return Result.invalidReques();
         }
-
         String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
         if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();

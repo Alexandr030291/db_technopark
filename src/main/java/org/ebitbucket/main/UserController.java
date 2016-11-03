@@ -124,9 +124,9 @@ final public class UserController {
 
         return Result.ok(userDetail);
     }
-
+/*
     @RequestMapping(path = "db/api/forum/listUsers", method = RequestMethod.GET)
-    public Result listPost(@RequestParam(name = "user") String email,
+    public Result listPost(   @RequestParam(name = "user") String email,
                               @RequestParam(name = "limit", required = false) Integer limit,
                               @RequestParam(name = "order", required = false) String order,
                               @RequestParam(name = "since", required = false) String since) {
@@ -145,9 +145,11 @@ final public class UserController {
             postDetails=postDetailsList.get(i);
             postDetails.setPoints(postDetails.getLikes()-postDetails.getDislikes());
         }
-        return Result.ok(postDetailsList);
-    }
 
+List<String> userList = userService;
+        return Result.ok();
+    }
+*/
     public static class FollowerRequesr{
         private final String follower;
         private final String followee;

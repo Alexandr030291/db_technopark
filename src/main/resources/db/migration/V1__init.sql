@@ -34,7 +34,8 @@ CREATE TABLE `Post`
 
   `likes` INT NOT NULL DEFAULT 0,
   `dislikes` INT NOT NULL DEFAULT 0,
-  `mpath` VARCHAR(255)
+  `mpath` VARCHAR(255),
+  `root` INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE `Thread`

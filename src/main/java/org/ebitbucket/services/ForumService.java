@@ -43,23 +43,40 @@ public class ForumService {
     }
 
     public List<Integer> getListThread(String short_name,String since, String order, Integer limit){
-        String sql ="SELECT `Thread`.`id` FROM `Thread`  " +
-                "JOIN `Forum` ON `Thread`.`forum` = `Forum`.`short_name`" +
-                "AND `Forum`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
-                "ORDER BY `Thread`.`date` " + order;
-        String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+        String sql = "SELECT `Thread`.`id` FROM `Thread`  " +
+                     "JOIN `Forum` ON `Thread`.`forum` = `Forum`.`short_name`" +
+                     "AND `Forum`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
+                     "ORDER BY `Thread`.`date` " + order;
+        String sqlLimit=(limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, short_name,since);
     }
 
     public List<Integer> getListPost(String short_name, String since, String order, Integer limit){
-        String sql ="SELECT `Post`.`id` FROM `Post`  " +
-                "JOIN `Forum` ON `Post`.`forum` = `Forum`.`short_name`" +
-                "AND `Forum`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
-                "ORDER BY `Post`.`date` " + order;
-        String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+        String sql = "SELECT `Post`.`id` FROM `Post`  " +
+                     "JOIN `Forum` ON `Post`.`forum` = `Forum`.`short_name`" +
+                     "AND `Forum`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
+                     "ORDER BY `Post`.`date` " + order;
+        String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, short_name,since);
 
     }
+
+    public List<String> getListUser(String short_name, Integer since, String order, Integer limit){
+        String sql = "SELECT `email` FROM `UserProfile`" +
+                     "JOIN `Post` ON `Post`.`user` = `UserProfile`.`email` " +
+                     "JOIN `Forum` ON `Post`.`forum` = `Forum`.`short_name`" +
+                     "WHERE `Forum`.`short_name` = ? " +
+                     "AND `UserProfile`.`id`>= ? " +
+                     "ORDER BY `UserProfile`.`name` "+ order;
+        String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
+        return template.queryForList(sql+sqlLimit, String.class, short_name,since);
+    }
+
+    /*
+    "SELECT DISTINCT email FROM user_profile JOIN post ON " +
+                        "user_profile.email = post.user_email JOIN forum ON post.forum = forum.short_name WHERE " +
+                        "short_name = ? AND user_profile.id >= ? ORDER BY user_profile.name "
+     */
 
     private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) -> new ForumDetail(rs.getInt("id"),
             rs.getString("name"),

@@ -8,9 +8,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -84,18 +81,18 @@ public class UserService {
 					 "AND `Followers`.`followee` = ?  " +
 				 	 "AND `User`.`id` = ? " +
 				 	 "ORDER BY `USER`.`name` " + order;
-		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
+		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
 	}
 
 	public List<String> getListFollowing(String email, String order, Integer since_id, Integer limit) {
 		String sql = "SELECT `followee` " +
-				"FROM `Followers` " +
-				"JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
-				"AND `Followers`.`follower` = ?  " +
-				"AND `User`.`id` = ? " +
-				"ORDER BY `USER`.`name` " + order;
-		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
+					 "FROM `Followers` " +
+					 "JOIN `User` ON `Followers`.`follower`=`User`.`email` " +
+					 "AND `Followers`.`follower` = ?  " +
+					 "AND `User`.`id` = ? " +
+					 "ORDER BY `USER`.`name` " + order;
+		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, String.class, email, since_id);
 	}
 
@@ -106,20 +103,21 @@ public class UserService {
 	}
 
 	public List<Integer> getListPost(String email, String order, String since, Integer limit) {
-		String sql = "SELECT `id` " +
-				"FROM `Post` " +
-				"WHERE `user` = ? AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
-				"ORDER BY `date` ?" + order;
-		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
+		String sql = 	"SELECT `id` " +
+						"FROM `Post` " +
+						"WHERE `user` = ? " +
+						"AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
+						"ORDER BY `date` ?" + order;
+		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, Integer.class, email, since);
 	}
 
 	public List<Integer> getListThread(String email, String order, String since, Integer limit) {
 		String sql = "SELECT `Thread`.`id` FROM `Thread` " +
-				"JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`email`" +
-				"AND `UserProfile`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
-				"ORDER BY `Thread`.`date` " + order;
-		String sqlLimit = (limit != null) ? " LIMIT " + limit + ";" : ";";
+					 "JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`email`" +
+					 "AND `UserProfile`.`email` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
+					 "ORDER BY `Thread`.`date` " + order;
+		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, Integer.class, email, since);
 	}
 
@@ -129,9 +127,7 @@ public class UserService {
 			rs.getString("email"),
 			rs.getString("about"),
 			rs.getBoolean("isAnonymous"));
-/*
-Integer id, String username, String name, String email,  String about, Boolean isAnonymous
- */
+
 	private final RowMapper<UserDetailAll> USER_DETAIL_ALL_ROW_MAPPER = (rs, rowNum) -> {
 
 		String email = rs.getString("email");

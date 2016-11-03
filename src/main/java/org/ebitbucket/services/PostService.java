@@ -34,9 +34,13 @@ public class PostService {
                       Boolean isDeleted) {
         String sql;
         String mpath ="";
+        Integer root=0;
         if (parent!=null && parent>=0){
-            sql = "SELECT `mpath` FROM `Post` WHERE `id` = ?;";
-            mpath = template.queryForObject(sql, String.class, parent);
+            sql = "SELECT `mpath`, `root` FROM `Post` WHERE `id` = ?;";
+            SqlRowSet set = template.queryForRowSet(sql, parent);
+            set.next();
+            mpath = set.getString("mpath");
+            root = set.getInt("root");
             int pow=max;
             for(int i= parent;i>0;i/=10){
                 pow--;
@@ -51,7 +55,13 @@ public class PostService {
                 "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);";
         template.update(sql, user, message, forum, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted,mpath);
         sql = "SELECT `id` FROM `Post` WHERE id = last_insert_id();";
-        return template.queryForObject(sql, Integer.class);
+        Integer id =template.queryForObject(sql, Integer.class);
+        if (root <= 0) {
+            root = id;
+        }
+        sql= "UPDATE `Post` SET `root` = ? WHERE `id` = ?;";
+        template.update(sql,root,id);
+        return id;
     }
 
     public PostDetails details(int id){

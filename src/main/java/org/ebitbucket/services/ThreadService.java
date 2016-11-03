@@ -81,7 +81,7 @@ public class ThreadService {
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
                     "AND `Thread`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
                     "ORDER BY `Post`.`date` " + order;
-        String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+        String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, id,since);
 
     }
@@ -90,23 +90,27 @@ public class ThreadService {
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
                     "AND `Thread`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
-                    "ORDER BY `Post`.`mpath` " + order;
-        String sqlLimit=(limit!=null)?" LIMIT "+limit+";":";";
+                    "ORDER BY `Post`.`root` " + order + ", `Post`.`mpath` ASC";
+        String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, id,since);
     }
 
-    public List<Integer> getListPostInParentTree(Integer id, String since,String order, Integer limit){
-        String LIMIT = (limit!=null)?" LIMIT "+limit+"":"";
-        String sql ="SELECT `Post`.`id` FROM `Post` JOIN " +
-                    "(SELECT `Post`.`id` FROM `Post` " +
+    public List<Integer> getListPostInParentTree(Integer thread, String since,String order, Integer limit){
+        String LIMIT = (limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
+        String sql ="SELECT `Post`.`root` FROM `Post` " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id` " +
                     "AND `Post`.`parent` = NULL " +
-                    "AND `Thread`.`id` = ? " +
-                    "AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
-                    "ORDER BY `Post`.`parent` "+order + LIMIT+ ")"+
-                    "AS Selection ON `Post`.`id` = Selection.`id` OR `Post`.`parent` = Selection.`id`"+
-                    "ORDER BY `Post`.`mpath` " + order + ";";
-        return template.queryForList(sql, Integer.class, id,since);
+                    "AND `Thread`.`id` = ? "  +
+                    "ORDER BY `Post`.`parent` "+order + LIMIT;
+        List<Integer> integerList=template.queryForList(sql,Integer.class,thread);
+        String root ="(";
+        for (Integer a_root : integerList) root += a_root.toString() + ", ";
+        root += "0)";
+        sql =   "SELECT `id` FROM `Post` "+
+                "WHERE `root` IN " + root+
+                "AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 "+
+                "ORDER BY `root` " + order + ", `mpath` ASC;";
+        return template.queryForList(sql, Integer.class, since);
     }
 
     public int vote(int id, String vote){
