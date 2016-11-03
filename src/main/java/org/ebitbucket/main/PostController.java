@@ -106,23 +106,23 @@ public class PostController {
                             @RequestParam(name = "limit", required = false) Integer limit,
                             @RequestParam(name = "order", required = false) String order,
                             @RequestParam(name = "since", required = false) String since) {
-
-        if (StringUtils.isEmpty(short_name)==(thread==null)|| (limit != null && limit < 0) || StringUtils.isEmpty(since)) {
+        since = Functions.validSince(since);
+        if (StringUtils.isEmpty(short_name)==(thread==null)|| StringUtils.isEmpty(since)) {
             return Result.invalidReques();
         }
-        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
-        if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
+        order = (StringUtils.isEmpty(order)) ? "desc" : order;
+        if (!"desc".equalsIgnoreCase(order) && !"asc".equalsIgnoreCase(order))
             return Result.incorrectRequest();
 
         List<Integer> postListId;
-        if (StringUtils.isEmpty(short_name)){
-            postListId = forumService.getListPost(short_name,since,_order,limit);
+        if (!StringUtils.isEmpty(short_name)){
+            postListId = forumService.getListPost(short_name,since,order,limit);
         }else {
-            postListId = threadService.getListPost(thread,since,_order,limit);
+            postListId = threadService.getListPost(thread,since,order,limit);
         }
         List<PostDetails> postDetailsList= new ArrayList<>();
         for (int i =0 ; i < postListId.size();i++){
-            postDetailsList.add(i,getPostDetail(i,null));
+            postDetailsList.add(i,getPostDetail(postListId.get(i),null));
         }
         return Result.ok(postDetailsList);
     }
