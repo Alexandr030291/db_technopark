@@ -64,14 +64,16 @@ public class ForumService {
     public List<String> getListUser(String short_name, Integer since, String order, Integer limit){
         String sql = "SELECT `UserProfile`.`email` FROM `UserProfile`" +
                      "JOIN (SELECT DISTINCT `email` FROM `UserProfile`" +
-                     "JOIN `Post` ON `Post`.`user` = `UserProfile`.`email` "  +
+                     "JOIN `Post` ON `Post`.`user` = `UserProfile`.`email` " +
                      "JOIN `Forum` ON `Post`.`forum` = `Forum`.`short_name`" +
-                     "WHERE `Forum`.`short_name` = ? " +
+                     "AND `Forum`.`short_name` = ? " +
                      "AND `UserProfile`.`id` > ? " +
                      ")AS `Users` ON `Users`.`email` = `UserProfile`.`email`" +
+                     "AND `UserProfile`.`id` > ? " +
                      "ORDER BY `UserProfile`.`name` "+ order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, String.class, short_name,since);
+        return template.queryForList(sql+sqlLimit, String.class, short_name,since, since);
+
     }
 
     private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) -> new ForumDetail(rs.getInt("id"),

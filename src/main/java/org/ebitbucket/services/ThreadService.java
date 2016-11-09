@@ -97,12 +97,12 @@ public class ThreadService {
 
     public List<Integer> getListPostInParentTree(Integer thread, String since,String order, Integer limit){
         String LIMIT = (limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
-        String sql ="SELECT `Post`.`root` FROM `Post` " +
+        String sql ="SELECT  DISTINCT `Post`.`root` FROM `Post` " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id` " +
-                    "AND `Post`.`id` = `Post`.`root` " +
+                    "AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 "+
                     "AND `Thread`.`id` = ? "  +
-                    "ORDER BY `Post`.`id` "+order + LIMIT;
-        List<Integer> integerList=template.queryForList(sql,Integer.class,thread);
+                    "ORDER BY `Post`.`root` "+order + LIMIT;
+        List<Integer> integerList=template.queryForList(sql,Integer.class, since,thread);
         String root ="(";
         for (Integer a_root : integerList) root += a_root.toString() + ", ";
         root += "0)";

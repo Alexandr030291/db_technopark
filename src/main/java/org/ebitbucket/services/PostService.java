@@ -48,19 +48,19 @@ public class PostService {
             for (;pow>0;pow--){
                 mpath+='0';
             }
-            mpath+= String.valueOf(parent);
         }
         sql = "INSERT INTO `Post` (`user`, `message`, `forum`, `thread`, `parent`, " +
-                "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`,`mpath`) VALUES " +
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);";
-        template.update(sql, user, message, forum, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted,mpath);
+                "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`) VALUES " +
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        template.update(sql, user, message, forum, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted);
         sql = "SELECT `id` FROM `Post` WHERE id = last_insert_id();";
         Integer id =template.queryForObject(sql, Integer.class);
         if (root <= 0) {
             root = id;
         }
-        sql= "UPDATE `Post` SET `root` = ? WHERE `id` = ?;";
-        template.update(sql,root,id);
+        sql= "UPDATE `Post` SET `root` = ?, `mpath` = ?  WHERE `id` = ?;";
+        mpath+= String.valueOf(id);
+        template.update(sql,root,mpath,id);
         return id;
     }
 
