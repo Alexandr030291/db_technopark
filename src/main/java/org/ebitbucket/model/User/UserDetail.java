@@ -22,7 +22,7 @@ public class UserDetail {
         this.about = about;
         this.name = name;
         this.email = email;
-        this.id =0;// id;
+        this.id =id;
         this.isAnonymous = isAnonymous;
     }
 

@@ -41,13 +41,6 @@ public class PostService {
             set.next();
             mpath = set.getString("mpath");
             root = set.getInt("root");
-            int pow=max;
-            for(int i= parent;i>0;i/=10){
-                pow--;
-            }
-            for (;pow>0;pow--){
-                mpath+='0';
-            }
         }
         sql = "INSERT INTO `Post` (`user`, `message`, `forum`, `thread`, `parent`, " +
                 "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`) VALUES " +
@@ -59,6 +52,13 @@ public class PostService {
             root = id;
         }
         sql= "UPDATE `Post` SET `root` = ?, `mpath` = ?  WHERE `id` = ?;";
+        int pow=max;
+        for(int i= id;i>0;i/=10){
+            pow--;
+        }
+        for (;pow>0;pow--){
+            mpath+='0';
+        }
         mpath+= String.valueOf(id);
         template.update(sql,root,mpath,id);
         return id;

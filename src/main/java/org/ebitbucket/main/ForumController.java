@@ -4,6 +4,7 @@ import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Forum.ForumRequest;
 import org.ebitbucket.model.User.UserDetail;
+import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.services.ForumService;
 import org.ebitbucket.services.UserService;
 import org.springframework.util.StringUtils;
@@ -65,16 +66,15 @@ final public class ForumController{
         if (StringUtils.isEmpty(short_name) || (limit != null && limit < 0)) {
             return Result.incorrectRequest();
         }
-        if (since==null)
-            since=0;
+        int _since = (since==null)?0:since;
         String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
         if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();
 
-        List<String> listUser = forumService.getListUser(short_name, since, _order, limit);
-        List<UserDetail> userDetailsList = new ArrayList<>();
+        List<String> listUser = forumService.getListUser(short_name, _since, _order, limit);
+        List<UserDetailAll> userDetailsList = new ArrayList<>();
         for (int i = 0; i < listUser.size(); i++) {
-            userDetailsList.add(i, userService.profile(listUser.get(i)));
+            userDetailsList.add(i, userService.profileAll(listUser.get(i)));
         }
         return Result.ok(userDetailsList);
     }

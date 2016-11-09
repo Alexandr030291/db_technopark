@@ -62,18 +62,26 @@ public class ForumService {
     }
 
     public List<String> getListUser(String short_name, Integer since, String order, Integer limit){
-        String sql = "SELECT `UserProfile`.`email` FROM `UserProfile`" +
-                     "JOIN (SELECT DISTINCT `email` FROM `UserProfile`" +
+        String sql = "SELECT DISTINCT `UserProfile`.`id` FROM `UserProfile`" +
                      "JOIN `Post` ON `Post`.`user` = `UserProfile`.`email` " +
-                     "JOIN `Forum` ON `Post`.`forum` = `Forum`.`short_name`" +
-                     "AND `Forum`.`short_name` = ? " +
-                     "AND `UserProfile`.`id` > ? " +
-                     ")AS `Users` ON `Users`.`email` = `UserProfile`.`email`" +
-                     "AND `UserProfile`.`id` > ? " +
-                     "ORDER BY `UserProfile`.`name` "+ order;
-        String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, String.class, short_name,since, since);
+                     "AND `Post`.`forum` = ? " +
+        //             "AND `Post`.`id` = `Post`.`root` " +
+        //             "AND `Post`.`isDeleted` = FALSE " +
+        //             "AND `Post`.`isSpam` = FALSE " +
+        //             "AND `Post`.`isHighlighted` = FALSE " +
+        //             "AND `Post`.`isEdited` = FALSE " +
+        //             "AND `Post`.`isApproved` = FALSE " +
+                     "AND `UserProfile`.`id` >= ? ";
 
+        List<Integer> integerList=template.queryForList(sql, Integer.class, short_name,since);
+        String root ="(";
+        for (Integer a_root : integerList) root += a_root.toString() + ", ";
+        root += "0)";
+        sql =   "SELECT `email`FROM `UserProfile` "+
+                "WHERE `id` IN " + root +
+                "ORDER BY `name` "+ order;
+        String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
+        return template.queryForList(sql+sqlLimit, String.class);
     }
 
     private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) -> new ForumDetail(rs.getInt("id"),
