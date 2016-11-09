@@ -1,5 +1,5 @@
 package org.ebitbucket;
-
+/*
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,3 +17,4 @@ public class DbTechnoparkApplicationTests {
 	}
 
 }
+*/
