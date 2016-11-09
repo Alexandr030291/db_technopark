@@ -1,19 +1,14 @@
 package org.ebitbucket.services;
 
-import com.sun.org.apache.xalan.internal.utils.XMLSecurityManager;
 import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
+
 import java.util.List;
 
 @Service

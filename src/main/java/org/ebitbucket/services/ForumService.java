@@ -7,12 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
 @Service
 @Transactional
 public class ForumService {
@@ -65,12 +60,6 @@ public class ForumService {
         String sql = "SELECT DISTINCT `UserProfile`.`id` FROM `UserProfile`" +
                      "JOIN `Post` ON `Post`.`user` = `UserProfile`.`email` " +
                      "AND `Post`.`forum` = ? " +
-        //             "AND `Post`.`id` = `Post`.`root` " +
-        //             "AND `Post`.`isDeleted` = FALSE " +
-        //             "AND `Post`.`isSpam` = FALSE " +
-        //             "AND `Post`.`isHighlighted` = FALSE " +
-        //             "AND `Post`.`isEdited` = FALSE " +
-        //             "AND `Post`.`isApproved` = FALSE " +
                      "AND `UserProfile`.`id` >= ? ";
 
         List<Integer> integerList=template.queryForList(sql, Integer.class, short_name,since);
