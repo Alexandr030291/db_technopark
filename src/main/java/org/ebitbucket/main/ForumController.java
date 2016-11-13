@@ -30,8 +30,9 @@ final public class ForumController{
                 StringUtils.isEmpty(body.getName())||
                 StringUtils.isEmpty(body.getShort_name()))
             return Result.invalidReques();
-
-        if (forumService.create(body.getName(),body.getShort_name(),body.getEmail()) == -1) {
+        int user_id = userService.getId(body.getEmail());
+        int id = forumService.create(body.getName(),body.getShort_name(),user_id);
+        if (id == -1) {
             return Result.ok(forumService.detail(body.getShort_name()));
         }
         return Result.ok(body);
@@ -52,7 +53,7 @@ final public class ForumController{
         }
 
         if (related != null && Arrays.asList(related).contains("user")) {
-            forumDetail.setUserDetail(userService.profileAll(forumDetail.getUser().toString()));
+            forumDetail.setUserDetail(userService.profileAll(new Integer(String.valueOf(forumDetail.getUser()))));
         }
 
         return Result.ok(forumDetail);
@@ -71,7 +72,7 @@ final public class ForumController{
         if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();
 
-        List<String> listUser = forumService.getListUser(short_name, _since, _order, limit);
+        List<Integer> listUser = forumService.getListUser(short_name, _since, _order, limit);
         List<UserDetailAll> userDetailsList = new ArrayList<>();
         for (int i = 0; i < listUser.size(); i++) {
             userDetailsList.add(i, userService.profileAll(listUser.get(i)));

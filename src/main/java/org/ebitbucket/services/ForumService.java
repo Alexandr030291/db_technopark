@@ -3,10 +3,16 @@ package org.ebitbucket.services;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 @Service
 @Transactional
@@ -17,30 +23,53 @@ public class ForumService {
         this.template = template;
     }
 
-    public int create(String name, String short_name, String email) {
+    public int create(String name, String short_name, Integer user_id) {
         try {
-            String sql = "INSERT INTO `Forum`(`name`, `short_name`,`user`) VALUE(?,?,?);";
-            template.update(sql, name, short_name, email);
-            return 0;
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            template.update(
+                    new PreparedStatementCreator() {
+                        @Override
+                        public PreparedStatement createPreparedStatement(Connection cnctn) throws SQLException {
+                            PreparedStatement ps = cnctn.prepareStatement(
+                                    "INSERT INTO `Forums` (`short_name`) VALUES (?)",
+                                    new String[] {"id"});
+                            ps.setString(1, short_name);
+                            return ps;
+                        }
+                    }
+                    , keyHolder);
+            String sql = "INSERT INTO `ForumDetail`(`id`,`name`, `user`) VALUE(?,?,?);";
+            template.update(sql, keyHolder.getKey().intValue(), name, user_id);
+            return template.queryForObject("SELECT LAST_INSERT_ID()",Integer.class);
         } catch (DuplicateKeyException dk) {
             return -1;
         }
     }
 
-    public ForumDetail detail(String short_name){
-        String sql = "SELECT * FROM `Forum` WHERE `short_name` = ?;";
-        return template.queryForObject(sql, Forum_DETAIL_ROWMAPPER ,short_name);
+    public Integer getId(String short_name){
+        return template.queryForObject("SELECT `id` FROM `Forums` WHERE `short_name` = ?;",Integer.class, short_name);
+    }
+
+    public String getShortName(int id){
+        return template.queryForObject("SELECT `short_name` FROM `Forums` WHERE `id` = ?;",String.class, id);
+    }
+
+    public ForumDetail detail(Integer id){
+        String sql = "SELECT * FROM `ForumDetail` " +
+                     "JOIN `Forums` ON   `ForumDetail`.`id`= `Forums`.`id`  " +
+                     "AND `Forums`.`id` = ?;";
+        return template.queryForObject(sql, Forum_DETAIL_ROWMAPPER ,id);
     }
 
     public int getCount(){
-        String sql = "SELECT count(*) FROM `Forum`";
+        String sql = "SELECT count(*) FROM `Forums`";
         return template.queryForObject(sql, Integer.class);
     }
 
     public List<Integer> getListThread(String short_name,String since, String order, Integer limit){
         String sql = "SELECT `Thread`.`id` FROM `Thread`  " +
-                     "JOIN `Forum` ON `Thread`.`forum` = `Forum`.`short_name`" +
-                     "AND `Forum`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
+                     "JOIN `ForumDetail` ON `Thread`.`forum` = `ForumDetail`.`short_name`" +
+                     "AND `ForumDetail`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
                      "ORDER BY `Thread`.`date` " + order;
         String sqlLimit=(limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, short_name,since);
@@ -48,15 +77,15 @@ public class ForumService {
 
     public List<Integer> getListPost(String short_name, String since, String order, Integer limit){
         String sql = "SELECT `Post`.`id` FROM `Post`  " +
-                     "JOIN `Forum` ON `Post`.`forum` = `Forum`.`short_name`" +
-                     "AND `Forum`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
+                     "JOIN `ForumDetail` ON `Post`.`forum` = `ForumDetail`.`short_name`" +
+                     "AND `ForumDetail`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
                      "ORDER BY `Post`.`date` " + order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, short_name,since);
 
     }
 
-    public List<String> getListUser(String short_name, Integer since, String order, Integer limit){
+    public List<Integer> getListUser(String short_name, Integer since, String order, Integer limit){
         String sql = "SELECT DISTINCT `UserProfile`.`id` FROM `UserProfile`" +
                      "JOIN `Post` ON `Post`.`user` = `UserProfile`.`email` " +
                      "AND `Post`.`forum` = ? " +
@@ -70,7 +99,7 @@ public class ForumService {
                 "WHERE `id` IN " + root +
                 "ORDER BY `name` "+ order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, String.class);
+        return template.queryForList(sql+sqlLimit, Integer.class);
     }
 
     private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) -> new ForumDetail(rs.getInt("id"),

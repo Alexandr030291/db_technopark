@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 public class PostController {
@@ -237,12 +236,13 @@ public class PostController {
                 }
 
                 if (Arrays.asList(related).contains("user")) {
-                    userDetailAll=userService.profileAll(user);
+                    int user_id = userService.getId(user);
+                    userDetailAll=userService.profileAll(user_id);
                     flag++;
                 }
 
                 if (Arrays.asList(related).contains("thread")){
-                    threadDetail=(new ThreadController(threadService, forumService, userService)).getDetails(thread,null);  //threadService.detail(thread);
+                    threadDetail=(new ThreadController(threadService, forumService, userService)).getThreadDetails(thread,null);  //threadService.detail(thread);
                     flag++;
                 }
 

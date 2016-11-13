@@ -21,8 +21,8 @@ public class ThreadService {
 
     }
 
-    public int create(String forum,
-                      String user,
+    public int create(int forum,
+                      int user,
                       String title,
                       String message,
                       String slug,

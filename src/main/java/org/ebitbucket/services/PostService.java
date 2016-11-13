@@ -8,11 +8,14 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 
 @Service
 @Transactional
 public class PostService {
-    final int max = 4;
     private final JdbcTemplate template;
 
     public PostService(JdbcTemplate template) {
@@ -32,6 +35,10 @@ public class PostService {
                       Boolean isDeleted) {
         String sql;
         String mpath ="";
+        sql = "INSERT INTO `Post` (`user`, `message`, `forum`, `thread`, `parent`, " +
+                "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`) VALUES " +
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        template.update(sql, user, message, forum, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted);
         Integer root=0;
         if (parent!=null && parent>=0){
             sql = "SELECT `mpath`, `root` FROM `Post` WHERE `id` = ?;";
@@ -40,24 +47,27 @@ public class PostService {
             mpath = set.getString("mpath");
             root = set.getInt("root");
         }
-        sql = "INSERT INTO `Post` (`user`, `message`, `forum`, `thread`, `parent`, " +
-                "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`) VALUES " +
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-        template.update(sql, user, message, forum, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted);
-        sql = "SELECT `id` FROM `Post` WHERE id = last_insert_id();";
+        sql = "SELECT LAST_INSERT_ID()";
         Integer id =template.queryForObject(sql, Integer.class);
         if (root <= 0) {
             root = id;
         }
         sql= "UPDATE `Post` SET `root` = ?, `mpath` = ?  WHERE `id` = ?;";
-        int pow=max;
-        for(int i= id;i>0;i/=10){
-            pow--;
+        int pow;
+        int maxCharInMpath = 4;
+        int startchar = 48;
+        int code = 64;
+        int [] hash = new int[maxCharInMpath];
+        for (int i = 0; i< maxCharInMpath; i++){
+            hash[i]= startchar;
         }
-        for (;pow>0;pow--){
-            mpath+='0';
+        for(int i = id, j = maxCharInMpath -1; i>0; i/=code,j--){
+            pow = i%code;
+            hash[j]+=pow;
         }
-        mpath+= String.valueOf(id);
+        for (int i = 0; i< maxCharInMpath; i++){
+            mpath+=(char)hash[i];
+        }
         template.update(sql,root,mpath,id);
         return id;
     }

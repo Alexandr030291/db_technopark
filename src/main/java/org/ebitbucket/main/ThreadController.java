@@ -3,34 +3,23 @@ package org.ebitbucket.main;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ebitbucket.lib.Functions;
-import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.MessageUpdate;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.Tread.ThreadRequest;
-import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.Vote;
-import org.ebitbucket.services.ForumService;
-import org.ebitbucket.services.ThreadService;
-import org.ebitbucket.services.UserService;
+import org.ebitbucket.services.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
-public class ThreadController {
-    private  final ThreadService threadService;
-    private ForumService forumService;
-    private UserService userService;
-
-    public ThreadController(ThreadService threadService, ForumService forumService, UserService userService) {
-        this.threadService = threadService;
-        this.forumService = forumService;
-        this.userService = userService;
+public class ThreadController extends MainController{
+    public ThreadController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, MainService mainService) {
+        super(forumService, userService, threadService, postService, mainService);
     }
+
 
     @RequestMapping(path = "db/api/thread/create", method = RequestMethod.POST)
     public Result threadCreate(@RequestBody ThreadRequest body){
@@ -42,9 +31,13 @@ public class ThreadController {
                 StringUtils.isEmpty(body.getDate()) ||
                 body.getClosed() == null)
             return Result.invalidReques();
-        int id = threadService.create(
-                body.getForum(),
-                body.getUser(),
+        Integer forum_id = getForumService().getId(body.getForum());
+        Integer user_id = getUserService().getId(body.getUser());
+        if (forum_id==null || user_id == null)
+            return Result.invalidReques();
+        int id = getThreadService().create(
+                forum_id,
+                user_id,
                 body.getTitle(),
                 body.getMessage(),
                 body.getSlug(),
@@ -60,7 +53,7 @@ public class ThreadController {
         if (    body.getThread() == null ||
                 StringUtils.isEmpty(body.getUser()))
             return Result.invalidReques();
-        if(!threadService.subscribe(body.getThread(),body.getUser())){
+        if(!getThreadService().subscribe(body.getThread(),body.getUser())){
             return Result.incorrectRequest();
         }
         return Result.ok(body);
@@ -71,7 +64,7 @@ public class ThreadController {
         if (    body.getThread() == null ||
                 StringUtils.isEmpty(body.getUser()))
             return Result.invalidReques();
-        if(!threadService.unsubscribe(body.getThread(),body.getUser())){
+        if(!getThreadService().unsubscribe(body.getThread(),body.getUser())){
             return Result.incorrectRequest();
         }
         return Result.ok(body);
@@ -87,7 +80,7 @@ public class ThreadController {
         if (!Functions.isArrayValid(related, "user","forum")) {
             return Result.incorrectRequest();
         }
-        ThreadDetail threadDetail = getDetails(thread,related);
+        ThreadDetail threadDetail = getThreadDetails(thread,related);
         if (threadDetail == null)
             return Result.notFound();
 
@@ -111,10 +104,10 @@ public class ThreadController {
         if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();
 
-        List<Integer> threadListId = forumService.getListThread(short_name,since,_order,limit);
+        List<Integer> threadListId = getForumService().getListThread(short_name,since,_order,limit);
         List<ThreadDetail> threadDetailsList = new ArrayList<>();
         for (int i =0 ; i < threadListId.size();i++){
-            threadDetailsList.add(i,getDetails(threadListId.get(i),related));
+            threadDetailsList.add(i, getThreadDetails(threadListId.get(i),related));
         }
         return Result.ok(threadDetailsList);
     }
@@ -135,13 +128,14 @@ public class ThreadController {
 
         List<Integer> threadListId;
         if (!StringUtils.isEmpty(short_name)){
-            threadListId = forumService.getListThread(short_name,since,_order,limit);
+            threadListId = getForumService().getListThread(short_name,since,_order,limit);
         }else {
-            threadListId = userService.getListThread(email,_order,since,limit);
+            int user_id = getUserService().getId(email);
+            threadListId = getUserService().getListThread(user_id,_order,since,limit);
         }
         List<ThreadDetail> threadDetailsLists = new ArrayList<>();
         for (int i =0 ; i < threadListId.size();i++){
-            threadDetailsLists.add(i,getDetails(threadListId.get(i),null));
+            threadDetailsLists.add(i, getThreadDetails(threadListId.get(i),null));
         }
         return Result.ok(threadDetailsLists);
     }
@@ -152,37 +146,37 @@ public class ThreadController {
         if (field == null) {
             return Result.incorrectRequest();
         }
-        if (threadService.vote(body.getThread(),field)==0)
+        if (getThreadService().vote(body.getThread(),field)==0)
             return Result.notFound();
-            ThreadDetail threadDetails = threadService.detail(body.getThread());
+            ThreadDetail threadDetails = getThreadService().detail(body.getThread());
         return Result.ok(threadDetails);
     }
 
 
     @RequestMapping(path = "db/api/thread/close", method = RequestMethod.POST)
     public Result  closeThread(@RequestBody Vote body) {
-        if (threadService.close(body.getThread())==0)
+        if (getThreadService().close(body.getThread())==0)
             return Result.notFound();
         return Result.ok("thread: " + body.getThread());
     }
 
     @RequestMapping(path = "db/api/thread/open", method = RequestMethod.POST)
     public Result  openThread(@RequestBody Vote body) {
-        if (threadService.open(body.getThread())==0)
+        if (getThreadService().open(body.getThread())==0)
             return Result.notFound();
         return Result.ok("thread: " + body.getThread());
     }
 
     @RequestMapping(path = "db/api/thread/restore", method = RequestMethod.POST)
     public Result  restoreThread(@RequestBody Vote body) {
-        if (threadService.restore(body.getThread())==0)
+        if (getThreadService().restore(body.getThread())==0)
             return Result.notFound();
         return Result.ok("thread: " + body.getThread());
     }
 
     @RequestMapping(path = "db/api/thread/remove", method = RequestMethod.POST)
     public Result  removeThread(@RequestBody Vote body) {
-        if (threadService.remove(body.getThread())==0)
+        if (getThreadService().remove(body.getThread())==0)
             return Result.notFound();
         return Result.ok("thread: " + body.getThread());
     }
@@ -192,59 +186,12 @@ public class ThreadController {
         if (StringUtils.isEmpty(body.getMessage()) ||StringUtils.isEmpty(body.getSlug())|| body.getThread() == null) {
             return Result.incorrectRequest();
         }
-        if (threadService.update(body.getThread(), body.getMessage(),body.getSlug())==0)
+        if (getThreadService().update(body.getThread(), body.getMessage(),body.getSlug())==0)
             return Result.notFound();
-        ThreadDetail threadDetail = threadService.detail(body.getThread());
+        ThreadDetail threadDetail = getThreadService().detail(body.getThread());
         return Result.ok(threadDetail);
     }
 
-    ThreadDetail getDetails(Integer id, String[] related){
-        ThreadDetail threadDetail = threadService.detail(id);
-        if (threadDetail != null) {
-            String forum = threadDetail.getForum().toString();
-            String user = threadDetail.getUser().toString();
-            String title = threadDetail.getTitle();
-            String message = threadDetail.getMessage();
-            String slug = threadDetail.getSlug();
-            String date = threadDetail.getDate();
-            Boolean isClosed = threadDetail.getIsClosed();
-            Boolean isDeleted = threadDetail.getIsDeleted();
-            Integer likes = threadDetail.getLikes();
-            Integer dislikes = threadDetail.getDislikes();
-            ForumDetail forumDetail = null;
-            UserDetailAll userDetail = null;
-            int result =0;
-            if (related != null) {
-                if (Arrays.asList(related).contains("forum")) {
-                    forumDetail = forumService.detail(forum);
-                    result++;
-                }
-
-                if (Arrays.asList(related).contains("user")) {
-                    userDetail = userService.profileAll(user);
-                    result++;
-                }
-            }
-            if(result>0) {
-                threadDetail = new ThreadDetail(
-                        id,
-                        (forumDetail != null) ? forumDetail : forum,
-                        (userDetail != null) ? userDetail : user,
-                        title,
-                        message,
-                        slug,
-                        date,
-                        isClosed,
-                        isDeleted,
-                        likes,
-                        dislikes
-                );
-            }
-            threadDetail.setPoints(threadDetail.getLikes() - threadDetail.getDislikes());
-            threadDetail.setPosts(threadService.getCountPost(id));
-        }
-        return threadDetail;
-    }
     private static class Subscription{
         private final Integer thread;
         private final String user;

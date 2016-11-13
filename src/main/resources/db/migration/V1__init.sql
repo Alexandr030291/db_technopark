@@ -1,26 +1,36 @@
 CREATE TABLE `UserProfile`
 (
-  `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-  `email` VARCHAR(50) NOT NULL UNIQUE KEY,
+  `id` INT NOT NULL UNIQUE KEY PRIMARY KEY,
   `name` VARCHAR(50),
   `username` VARCHAR(50),
   `about` TEXT,
   `isAnonymous` BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE `Forum`
+CREATE TABLE `Users`
 (
   `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `email` VARCHAR(50) NOT NULL UNIQUE KEY
+);
+
+CREATE TABLE `ForumDetail`
+(
+  `id` INT NOT NULL UNIQUE KEY PRIMARY KEY,
   `name` VARCHAR(50) NOT NULL UNIQUE KEY,
-  `short_name` VARCHAR(50) NOT NULL UNIQUE KEY,
-  `user` VARCHAR(50) NOT NULL
+  `user` INT NOT NULL
+);
+
+CREATE TABLE `Forums`
+(
+  `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `short_name` VARCHAR(50) NOT NULL UNIQUE KEY
 );
 
 CREATE TABLE `Post`
 (
   `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-  `forum` VARCHAR(50) NOT NULL,
-  `user` VARCHAR(50) NOT NULL,
+  `forum` INT NOT NULL,
+  `user` INT NOT NULL,
   `thread` INT NOT NULL ,
   `message` TEXT NOT NULL ,
   `date` DATETIME NOT NULL,
@@ -41,8 +51,8 @@ CREATE TABLE `Post`
 CREATE TABLE `Thread`
 (
   `id` INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-  `forum` VARCHAR(50) NOT NULL,
-  `user` VARCHAR(50) NOT NULL,
+  `forum` INT NOT NULL,
+  `user` INT NOT NULL,
   `title` VARCHAR(50) NOT NULL ,
   `message` TEXT NOT NULL ,
   `slug` VARCHAR(50) NOT NULL ,
@@ -57,32 +67,44 @@ CREATE TABLE `Thread`
 
 CREATE TABLE `Subscriptions`
 (
-  `user` VARCHAR(50) NOT NULL,
+  `user` INT NOT NULL,
   `thread` INT NOT NULL,
   UNIQUE (`user`,`thread`)
 );
 
 CREATE TABLE `Followers`
 (
-  `follower` VARCHAR(50) NOT NULL,
-  `followee` VARCHAR(50) NOT NULL,
+  `follower` INT NOT NULL,
+  `followee` INT NOT NULL,
   UNIQUE(`follower`, `followee`)
 );
 
-ALTER TABLE `Forum`
-  ADD CONSTRAINT `fk_Forum_1`
+ALTER TABLE `UserProfile`
+  ADD CONSTRAINT `fk_UserProfile_1`
+FOREIGN KEY (`id`)
+REFERENCES `Users` (`id`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `ForumDetail`
+  ADD CONSTRAINT `fk_ForumDetail_1`
+FOREIGN KEY (`id`)
+REFERENCES `Forums` (`id`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `ForumDetail`
+  ADD CONSTRAINT `fk_ForumDetail_2`
   FOREIGN KEY (`user`)
-  REFERENCES `UserProfile` (`email`)
+  REFERENCES `Users` (`id`)
   ON DELETE CASCADE;
 
 ALTER TABLE `Post`
   ADD constraint `fk_Post_1`
-  FOREIGN KEY (`user`) REFERENCES `UserProfile` (`email`)
+  FOREIGN KEY (`user`) REFERENCES `Users` (`id`)
   ON DELETE CASCADE;
 
 ALTER TABLE `Post`
   ADD constraint `fk_Post_2`
-  FOREIGN KEY `Post`(`forum`) REFERENCES `Forum` (`short_name`)
+  FOREIGN KEY `Post`(`forum`) REFERENCES `Forums` (`id`)
   ON DELETE CASCADE;
 
 ALTER TABLE `Post`
@@ -93,17 +115,17 @@ ALTER TABLE `Post`
 
 ALTER TABLE `Thread`
   ADD constraint `fk_Thread_1`
-  FOREIGN KEY (`user`) REFERENCES `UserProfile` (`email`)
+  FOREIGN KEY (`user`) REFERENCES `Users` (`id`)
   ON DELETE CASCADE;
 
 ALTER TABLE `Thread`
   ADD constraint `fk_Thread_2`
-  FOREIGN KEY (`forum`) REFERENCES `Forum` (`short_name`)
+  FOREIGN KEY (`forum`) REFERENCES `Forums` (`id`)
   ON DELETE CASCADE;
 
 ALTER TABLE `Subscriptions`
   ADD constraint `fk_Subscriptions_1`
-  FOREIGN KEY (`user`) REFERENCES `UserProfile` (`email`)
+  FOREIGN KEY (`user`) REFERENCES `Users` (`id`)
   ON DELETE CASCADE;
 
 ALTER TABLE `Subscriptions`
@@ -113,10 +135,10 @@ ALTER TABLE `Subscriptions`
 
 ALTER TABLE `Followers`
   ADD constraint `fk_Followers_1`
-  FOREIGN KEY (`follower`) REFERENCES `UserProfile` (`email`)
+  FOREIGN KEY (`follower`) REFERENCES `Users` (`id`)
   ON DELETE CASCADE;
 
 ALTER TABLE `Followers`
   ADD constraint `fk_Followers_2`
-  FOREIGN KEY (`followee`) REFERENCES `UserProfile` (`email`)
+  FOREIGN KEY (`followee`) REFERENCES `Users` (`id`)
   ON DELETE CASCADE;

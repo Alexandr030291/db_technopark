@@ -28,38 +28,41 @@ final public class UserController {
     public Result userCreate(@RequestBody UserProfile body) {
         if (StringUtils.isEmpty(body.getEmail()))
             return Result.invalidReques();
-        if (userService.create(body.getEmail(),body.getName(),body.getUsername(),body.getAbout(),body.getIsAnonymous()) == -1)
+        int id =userService.create(body.getEmail(),body.getName(),body.getUsername(),body.getAbout(),body.getIsAnonymous());
+        if (id == -1)
             return Result.userAlreadyExists();
-        return Result.ok(userService.profile(body.getEmail()));
+        body.setId(id);
+        return Result.ok(body);
     }
 
     @RequestMapping(path = "db/api/user/details", method = RequestMethod.GET)
     public Result userDetails(@RequestParam(name = "user") String email) {
-        UserDetailAll userDetail = userService.profileAll(email);
-        if (StringUtils.isEmpty(userDetail.getEmail()))
+        Integer user_id = userService.getId(email);
+        if (user_id == null)
             return Result.notFound();
-
-        return Result.ok(userDetail);
+        return Result.ok(userService.profileAll(user_id));
     }
 
     @RequestMapping(path = "db/api/user/follow", method = RequestMethod.POST)
     public Result userFollow(@RequestBody FollowerRequest body) {
-        UserDetailAll userDetail = userService.profileAll(body.getFollower());
+        int userFollower_id = userService.getId(body.getFollower());
+        UserDetailAll userDetail = userService.profileAll(userFollower_id );
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
-
-        userService.addFollowers(body.getFollower(), body.getFollowee());
+        int userFollowee_id = userService.getId(body.getFollowee());
+        userService.addFollowers(userFollower_id, userFollowee_id);
         userDetail.setFollowers(userDetail.getFollowers());
         return Result.ok(userDetail);
     }
 
     @RequestMapping(path = "db/api/user/unfollow", method = RequestMethod.POST)
     public Result userUnFollow(@RequestBody FollowerRequest body) {
-        UserDetailAll userDetail = userService.profileAll(body.getFollower());
+        int userFollower_id = userService.getId(body.getFollower());
+        UserDetailAll userDetail = userService.profileAll(userFollower_id);
         if (StringUtils.isEmpty(userDetail.getEmail()))
             return Result.notFound();
-
-        if(userService.delFollowers(body.getFollower(),body.getFollowee())==0)
+        int userFollowee_id = userService.getId(body.getFollowee());
+        if(userService.delFollowers(userFollower_id, userFollowee_id)==0)
             return Result.invalidReques();
         userDetail.setFollowers(userDetail.getFollowers());
         return Result.ok(userDetail);
@@ -69,10 +72,12 @@ final public class UserController {
     public Result updateProfile(@RequestBody UserProfileUpdate body){
         if (StringUtils.isEmpty(body.getUser()))
             return Result.unkownError();
-        if (userService.updateProfile(body.getUser(),body.getName(),body.getAbout())==0) {
+        int id = userService.getId(body.getUser());
+        if (id ==0) {
             return Result.notFound();
         }
-        return Result.ok(userService.profileAll(body.getUser()));
+        userService.updateProfile(id,body.getName(),body.getAbout());
+        return Result.ok(userService.profileAll(id));
     }
 
     @RequestMapping(path = "db/api/user/listFollowers", method = RequestMethod.GET)
@@ -89,7 +94,8 @@ final public class UserController {
         Integer _since_id = (since_id==null)?0:since_id;
         Integer _limit = (limit == null)?0:limit;
 
-        List<String> listFollowers = userService.getListFollowers(user,_order,_since_id,_limit);
+        int id = userService.getId(user);
+        List<Integer> listFollowers = userService.getListFollowers(id,_order,_since_id,_limit);
         List<UserDetailAll> userDetailList = new ArrayList<>();
         for (int i =0 ; i<listFollowers.size();i++){
             userDetailList.add(i,userService.profileAll(listFollowers.get(i)));
@@ -110,7 +116,8 @@ final public class UserController {
             return Result.incorrectRequest();
         Integer _since_id = (since_id==null)?0:since_id;
 
-        List<String> listFollowing = userService.getListFollowing(user,_order,_since_id,limit);
+        int id = userService.getId(user);
+        List<Integer> listFollowing = userService.getListFollowing(id,_order,_since_id,limit);
         List<UserDetailAll> userDetailList = new ArrayList<>();
         for (int i =0 ; i<listFollowing.size();i++){
             userDetailList.add(i,userService.profileAll(listFollowing.get(i)));

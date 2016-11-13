@@ -1,10 +1,13 @@
 package org.ebitbucket.main;
 
+import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.services.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Arrays;
 
 @RestController
 public class MainController {
@@ -65,5 +68,73 @@ public class MainController {
         public int getPost() {
             return post;
         }
+    }
+
+    public ForumService getForumService() {
+        return forumService;
+    }
+
+    public UserService getUserService() {
+        return userService;
+    }
+
+    public ThreadService getThreadService() {
+        return threadService;
+    }
+
+    public PostService getPostService() {
+        return postService;
+    }
+
+    public MainService getMainService() {
+        return mainService;
+    }
+
+    public ThreadDetail getThreadDetails(Integer id, String[] related){
+        ThreadDetail threadDetail = getThreadService().detail(id);
+        if (threadDetail != null) {
+            Integer forum = (int)threadDetail.getForum();
+            Integer user = (int)threadDetail.getUser();
+            String title = threadDetail.getTitle();
+            String message = threadDetail.getMessage();
+            String slug = threadDetail.getSlug();
+            String date = threadDetail.getDate();
+            Boolean isClosed = threadDetail.getIsClosed();
+            Boolean isDeleted = threadDetail.getIsDeleted();
+            Integer likes = threadDetail.getLikes();
+            Integer dislikes = threadDetail.getDislikes();
+            String user_email = getUserService().getEmail(user);
+            String short_name = getForumService().getShortName(forum);
+            Object forumDetail = null;
+            Object userDetail = null;
+
+            if (related != null&& Arrays.asList(related).contains("forum")) {
+                forumDetail = getForumService().detail(forum);
+            }else{
+                forumDetail=short_name;
+            }
+
+            if (related != null&Arrays.asList(related).contains("user")) {
+                userDetail = getUserService().profileAll(user);
+            }else {
+                userDetail = user_email;
+            }
+            threadDetail = new ThreadDetail(
+                    id,
+                    forumDetail,
+                    userDetail,
+                    title,
+                    message,
+                    slug,
+                    date,
+                    isClosed,
+                    isDeleted,
+                    likes,
+                    dislikes
+            );
+            threadDetail.setPoints(threadDetail.getLikes() - threadDetail.getDislikes());
+            threadDetail.setPosts(getThreadService().getCountPost(id));
+        }
+        return threadDetail;
     }
 }

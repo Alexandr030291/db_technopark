@@ -19,8 +19,10 @@ public class MainService {
 
     public void allClear(){
         template.execute("SET FOREIGN_KEY_CHECKS = 0");
+        template.execute("TRUNCATE TABLE `Users`;");
+        template.execute("TRUNCATE TABLE `Forums`;");
         template.execute("TRUNCATE TABLE `UserProfile`;");
-        template.execute("TRUNCATE TABLE `Forum`;");
+        template.execute("TRUNCATE TABLE `ForumDetail`;");
         template.execute("TRUNCATE TABLE `Thread`;");
         template.execute("TRUNCATE TABLE `Post`;");
         template.execute("TRUNCATE TABLE `Followers`;");
