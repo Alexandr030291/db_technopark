@@ -46,7 +46,7 @@ public class ThreadService {
         }
     }
 
-    public boolean unsubscribe(Integer thread, String user){
+    public boolean unsubscribe(Integer thread, int user){
         try {
             String sql="DELETE FROM `Subscriptions` WHERE `thread`= ? AND `user` = ?;";
             template.update(sql,thread,user);

@@ -96,17 +96,21 @@ public class MainController {
             Object forumDetail = null;
             Object userDetail = null;
 
-            if (related != null&& Arrays.asList(related).contains("forum")) {
-                forumDetail = getForumService().detail(forum);
-            }else{
-                forumDetail=short_name;
-            }
-
             if (related != null&&Arrays.asList(related).contains("user")) {
                 userDetail = getUserService().profileAll(user);
             }else {
                 userDetail = user_email;
             }
+
+            if (related != null&& Arrays.asList(related).contains("forum")) {
+                ForumDetail obj = getForumService().detail(forum);
+                user_email = getUserService().getEmail((Integer) obj.getUser());
+                obj.setUserDetail(user_email);
+                forumDetail = obj;
+            }else{
+                forumDetail = short_name;
+            }
+
             threadDetail = new ThreadDetail(
                     id,
                     forumDetail,
@@ -145,17 +149,10 @@ public class MainController {
             int likes = postDetails.getLikes();
 
             ThreadDetail threadDetail = null;
-            int flag = 0;
             String user_email = getUserService().getEmail(user);
             String short_name = getForumService().getShortName(forum);
             Object forumDetail = null;
             Object userDetail = null;
-
-            if (related != null&& Arrays.asList(related).contains("forum")) {
-                forumDetail = getForumService().detail(forum);
-            }else{
-                forumDetail=short_name;
-            }
 
             if (related != null&&Arrays.asList(related).contains("user")) {
                 userDetail = getUserService().profileAll(user);
@@ -163,29 +160,35 @@ public class MainController {
                 userDetail = user_email;
             }
 
-            if (related != null&&Arrays.asList(related).contains("thread")){
-                threadDetail=getThreadDetails(thread,null);  //threadService.detail(thread);
-                flag++;
+            if (related != null&& Arrays.asList(related).contains("forum")) {
+                ForumDetail obj = getForumService().detail(forum);
+                user_email = getUserService().getEmail((Integer) obj.getUser());
+                obj.setUserDetail(user_email);
+                forumDetail = obj;
+            }else{
+                forumDetail = short_name;
             }
 
-            if(flag>0) {
-                postDetails = new PostDetails(
-                        id,
-                        forumDetail,
-                        userDetail,
-                        (threadDetail != null) ? threadDetail : thread,
-                        parent,
-                        message,
-                        date,
-                        isApproved,
-                        isDeleted,
-                        isEdited,
-                        isHighlighted,
-                        isSpam,
-                        dislikes,
-                        likes
-                );
+            if (related != null&&Arrays.asList(related).contains("thread")){
+                threadDetail=getThreadDetails(thread,null);  //threadService.detail(thread);
             }
+
+            postDetails = new PostDetails(
+                    id,
+                    forumDetail,
+                    userDetail,
+                    (threadDetail != null) ? threadDetail : thread,
+                    parent,
+                    message,
+                    date,
+                    isApproved,
+                    isDeleted,
+                    isEdited,
+                    isHighlighted,
+                    isSpam,
+                    dislikes,
+                    likes
+            );
             postDetails.setPoints(likes-dislikes);
         }
         return postDetails;

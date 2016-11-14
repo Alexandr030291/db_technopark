@@ -129,14 +129,14 @@ public class UserService {
 		return template.queryForObject(sql, Integer.class);
 	}
 
-	public List<Integer> getListPost(String email, String order, String since, Integer limit) {
+	public List<Integer> getListPost(int user_id, String order, String since, Integer limit) {
 		String sql = 	"SELECT `id` " +
 						"FROM `Post` " +
 						"WHERE `user` = ? " +
 						"AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 " +
 						"ORDER BY `date` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
-		return template.queryForList(sql + sqlLimit, Integer.class, email, since);
+		return template.queryForList(sql + sqlLimit, Integer.class, user_id, since);
 	}
 
 	public List<Integer> getListThread(int id, String order, String since, Integer limit) {

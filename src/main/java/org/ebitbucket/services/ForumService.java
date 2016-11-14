@@ -111,5 +111,5 @@ public class ForumService {
     private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) -> new ForumDetail(rs.getInt("id"),
             rs.getString("name"),
             rs.getString("short_name"),
-            rs.getString("user"));
+            rs.getInt("user"));
 }

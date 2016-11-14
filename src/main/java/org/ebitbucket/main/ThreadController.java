@@ -65,7 +65,8 @@ public class ThreadController extends MainController{
         if (    body.getThread() == null ||
                 StringUtils.isEmpty(body.getUser()))
             return Result.invalidReques();
-        if(!getThreadService().unsubscribe(body.getThread(),body.getUser())){
+        Integer user_id = getUserService().getId(body.getUser());
+        if(!getThreadService().unsubscribe(body.getThread(),user_id)){
             return Result.incorrectRequest();
         }
         return Result.ok(body);
