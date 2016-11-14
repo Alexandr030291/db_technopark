@@ -22,9 +22,9 @@ public class PostService {
         this.template = template;
     }
 
-    public int create(String user,
+    public int create(Integer user,
                       String message,
-                      String forum,
+                      Integer forum,
                       Integer thread,
                       Integer parent,
                       String date,
@@ -103,8 +103,8 @@ public class PostService {
     }
 
     private static final RowMapper<PostDetails> POST_DETAIL_ROW_MAPPER = (rs, rowNum) -> new PostDetails(rs.getInt("id"),
-            rs.getString("forum"),
-            rs.getString("user"),
+            rs.getInt("forum"),
+            rs.getInt("user"),
             rs.getInt("thread"),
             (rs.getString("parent")!=null)?rs.getInt("parent"):null,
             rs.getString("message"),

@@ -8,10 +8,7 @@ import org.ebitbucket.model.Post.PostRequest;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.Vote;
-import org.ebitbucket.services.ForumService;
-import org.ebitbucket.services.PostService;
-import org.ebitbucket.services.ThreadService;
-import org.ebitbucket.services.UserService;
+import org.ebitbucket.services.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,17 +17,10 @@ import java.util.Arrays;
 import java.util.List;
 
 @RestController
-public class PostController {
-    private final PostService postService;
-    private final ForumService forumService;
-    private final UserService userService;
-    private final ThreadService threadService;
+public class PostController extends MainController{
 
-    public PostController(PostService postService, ForumService forumService, UserService userService, ThreadService threadService) {
-        this.postService = postService;
-        this.forumService = forumService;
-        this.userService = userService;
-        this.threadService = threadService;
+    public PostController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, MainService mainService) {
+        super(forumService, userService, threadService, postService, mainService);
     }
 
     @RequestMapping(path = "db/api/post/create", method = RequestMethod.POST)
@@ -41,9 +31,11 @@ public class PostController {
                 StringUtils.isEmpty(body.getMessage()) ||
                 body.getThread() == null)
             return Result.invalidReques();
-        int id = postService.create(body.getUser(),
+        int user_id = getUserService().getId(body.getUser());
+        int forum_id = getForumService().getId(body.getForum());
+        int id = getPostService().create(user_id,
                 body.getMessage(),
-                body.getForum(),
+                forum_id,
                 body.getThread(),
                 body.getParent(),
                 body.getDate(),
@@ -91,7 +83,8 @@ public class PostController {
         if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();
 
-        List<Integer> postListId = forumService.getListPost(short_name,since,_order,limit);
+        Integer forum_id = getForumService().getId(short_name);
+        List<Integer> postListId = getForumService().getListPost(forum_id,since,_order,limit);
         List<PostDetails> postDetailsList= new ArrayList<>();
         for (int i =0 ; i < postListId.size();i++){
             postDetailsList.add(i,getPostDetail(postListId.get(i),related));
@@ -115,9 +108,10 @@ public class PostController {
 
         List<Integer> postListId;
         if (!StringUtils.isEmpty(short_name)){
-            postListId = forumService.getListPost(short_name,since,order,limit);
+            Integer forum_id =getForumService().getId(short_name);
+            postListId = getForumService().getListPost(forum_id,since,order,limit);
         }else {
-            postListId = threadService.getListPost(thread,since,order,limit);
+            postListId = getThreadService().getListPost(thread,since,order,limit);
         }
         List<PostDetails> postDetailsList= new ArrayList<>();
         for (int i =0 ; i < postListId.size();i++){
@@ -131,22 +125,22 @@ public class PostController {
         if (StringUtils.isEmpty(body.getMessage())||body.getPost()==null) {
             return Result.incorrectRequest();
         }
-        if (postService.update(body.getPost(),body.getMessage())==0)
+        if (getPostService().update(body.getPost(),body.getMessage())==0)
             return Result.notFound();
-        PostDetails postDetails = postService.details(body.getPost());
+        PostDetails postDetails = getPostService().details(body.getPost());
         return Result.ok(postDetails);
     }
 
     @RequestMapping(path = "db/api/post/remove", method = RequestMethod.POST)
     public Result deletePost(@RequestBody Vote body) {
-        if (postService.remove(body.getPost())==0)
+        if (getPostService().remove(body.getPost())==0)
             Result.notFound();
         return Result.ok("post: " + body.getPost());
     }
 
     @RequestMapping(path = "db/api/post/restore", method = RequestMethod.POST)
     public Result restorePost(@RequestBody Vote body) {
-        if (postService.restore(body.getPost()) == 0)
+        if (getPostService().restore(body.getPost()) == 0)
             Result.notFound();
         return Result.ok("post: " + body.getPost());
     }
@@ -157,9 +151,9 @@ public class PostController {
         if (field == null) {
             return Result.incorrectRequest();
         }
-        if (postService.vote(body.getPost(),field)==0)
+        if (getPostService().vote(body.getPost(),field)==0)
             return Result.notFound();
-        PostDetails postDetails = postService.details(body.getPost());
+        PostDetails postDetails = getPostService().details(body.getPost());
         return Result.ok(postDetails);
     }
 
@@ -187,13 +181,13 @@ public class PostController {
         List<Integer> threadListId = new ArrayList<>();
         switch (sort){
             case "flat":
-                threadListId  = threadService.getListPost(thread,since,_order,limit);
+                threadListId  = getThreadService().getListPost(thread,since,_order,limit);
                 break;
             case "tree":
-                threadListId  = threadService.getListPostInTree(thread,since,_order,limit);
+                threadListId  = getThreadService().getListPostInTree(thread,since,_order,limit);
                 break;
             case "parent_tree":
-                threadListId  = threadService.getListPostInParentTree(thread,since,_order,limit);
+                threadListId  = getThreadService().getListPostInParentTree(thread,since,_order,limit);
                 break;
             default:
                 Result.incorrectRequest();
@@ -207,66 +201,5 @@ public class PostController {
         return Result.ok(postDetailsList);
     }
 
-    private PostDetails getPostDetail(int id, String[] related){
-        PostDetails postDetails = postService.details(id);
-        if (postDetails!=null){
-            String forum = postDetails.getForum().toString();
-            String user = postDetails.getUser().toString();
-            Integer thread = new Integer (postDetails.getThread().toString());
-            Integer parent = postDetails.getParent();
-            String message = postDetails.getMessage();
-            String date = postDetails.getDate();
-            Boolean isApproved = postDetails.getIsApproved();
-            Boolean isDeleted = postDetails.getIsDeleted();
-            Boolean isEdited = postDetails.getIsEdited();
-            Boolean isHighlighted = postDetails.getIsHighlighted();
-            Boolean isSpam = postDetails.getIsSpam();
 
-            int dislikes = postDetails.getDislikes();
-            int likes = postDetails.getLikes();
-
-            UserDetailAll userDetailAll = null;
-            ForumDetail forumDetail = null;
-            ThreadDetail threadDetail = null;
-            int flag = 0;
-            if (related != null) {
-                if (Arrays.asList(related).contains("forum")) {
-                    forumDetail = forumService.detail(forum);
-                    flag++;
-                }
-
-                if (Arrays.asList(related).contains("user")) {
-                    int user_id = userService.getId(user);
-                    userDetailAll=userService.profileAll(user_id);
-                    flag++;
-                }
-
-                if (Arrays.asList(related).contains("thread")){
-                    threadDetail=(new ThreadController(threadService, forumService, userService)).getThreadDetails(thread,null);  //threadService.detail(thread);
-                    flag++;
-                }
-
-                if(flag>0) {
-                    postDetails = new PostDetails(
-                            id,
-                            (forumDetail != null) ? forumDetail : forum,
-                            (userDetailAll != null) ? userDetailAll : user,
-                            (threadDetail != null) ? threadDetail : thread,
-                            parent,
-                            message,
-                            date,
-                            isApproved,
-                            isDeleted,
-                            isEdited,
-                            isHighlighted,
-                            isSpam,
-                            dislikes,
-                            likes
-                    );
-                }
-            }
-            postDetails.setPoints(likes-dislikes);
-        }
-        return postDetails;
-    }
 }

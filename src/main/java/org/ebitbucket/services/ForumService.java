@@ -1,7 +1,9 @@
 package org.ebitbucket.services;
 
 import org.ebitbucket.model.Forum.ForumDetail;
+import org.springframework.beans.NullValueInNestedPathException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
@@ -47,7 +49,11 @@ public class ForumService {
     }
 
     public Integer getId(String short_name){
-        return template.queryForObject("SELECT `id` FROM `Forums` WHERE `short_name` = ?;",Integer.class, short_name);
+        try {
+            return template.queryForObject("SELECT `id` FROM `Forums` WHERE `short_name` = ?;",Integer.class, short_name);
+        } catch (EmptyResultDataAccessException na){
+            return 0;
+        }
     }
 
     public String getShortName(int id){
@@ -66,36 +72,36 @@ public class ForumService {
         return template.queryForObject(sql, Integer.class);
     }
 
-    public List<Integer> getListThread(String short_name,String since, String order, Integer limit){
+    public List<Integer> getListThread(int forum_id,String since, String order, Integer limit){
         String sql = "SELECT `Thread`.`id` FROM `Thread`  " +
-                     "JOIN `ForumDetail` ON `Thread`.`forum` = `ForumDetail`.`short_name`" +
-                     "AND `ForumDetail`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
+                     "JOIN `ForumDetail` ON `Thread`.`forum` = `ForumDetail`.`id`" +
+                     "AND `ForumDetail`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
                      "ORDER BY `Thread`.`date` " + order;
         String sqlLimit=(limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, Integer.class, short_name,since);
+        return template.queryForList(sql+sqlLimit, Integer.class, forum_id,since);
     }
 
-    public List<Integer> getListPost(String short_name, String since, String order, Integer limit){
+    public List<Integer> getListPost(int forum_id, String since, String order, Integer limit){
         String sql = "SELECT `Post`.`id` FROM `Post`  " +
-                     "JOIN `ForumDetail` ON `Post`.`forum` = `ForumDetail`.`short_name`" +
-                     "AND `ForumDetail`.`short_name` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
+                     "JOIN `ForumDetail` ON `Post`.`forum` = `ForumDetail`.`id`" +
+                     "AND `ForumDetail`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
                      "ORDER BY `Post`.`date` " + order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, Integer.class, short_name,since);
+        return template.queryForList(sql+sqlLimit, Integer.class, forum_id,since);
 
     }
 
-    public List<Integer> getListUser(String short_name, Integer since, String order, Integer limit){
+    public List<Integer> getListUser(int forum_id, Integer since, String order, Integer limit){
         String sql = "SELECT DISTINCT `UserProfile`.`id` FROM `UserProfile`" +
-                     "JOIN `Post` ON `Post`.`user` = `UserProfile`.`email` " +
+                     "JOIN `Post` ON `Post`.`user` = `UserProfile`.`id` " +
                      "AND `Post`.`forum` = ? " +
                      "AND `UserProfile`.`id` >= ? ";
 
-        List<Integer> integerList=template.queryForList(sql, Integer.class, short_name,since);
+        List<Integer> integerList=template.queryForList(sql, Integer.class, forum_id,since);
         String root ="(";
         for (Integer a_root : integerList) root += a_root.toString() + ", ";
         root += "0)";
-        sql =   "SELECT `email`FROM `UserProfile` "+
+        sql =   "SELECT `id`FROM `UserProfile` "+
                 "WHERE `id` IN " + root +
                 "ORDER BY `name` "+ order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";

@@ -53,7 +53,8 @@ public class ThreadController extends MainController{
         if (    body.getThread() == null ||
                 StringUtils.isEmpty(body.getUser()))
             return Result.invalidReques();
-        if(!getThreadService().subscribe(body.getThread(),body.getUser())){
+        Integer user_id = getUserService().getId(body.getUser());
+        if(!getThreadService().subscribe(body.getThread(),user_id)){
             return Result.incorrectRequest();
         }
         return Result.ok(body);
@@ -104,7 +105,8 @@ public class ThreadController extends MainController{
         if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();
 
-        List<Integer> threadListId = getForumService().getListThread(short_name,since,_order,limit);
+        Integer forum_id = getForumService().getId(short_name);
+        List<Integer> threadListId = getForumService().getListThread(forum_id,since,_order,limit);
         List<ThreadDetail> threadDetailsList = new ArrayList<>();
         for (int i =0 ; i < threadListId.size();i++){
             threadDetailsList.add(i, getThreadDetails(threadListId.get(i),related));
@@ -128,7 +130,8 @@ public class ThreadController extends MainController{
 
         List<Integer> threadListId;
         if (!StringUtils.isEmpty(short_name)){
-            threadListId = getForumService().getListThread(short_name,since,_order,limit);
+            Integer forum_id = getForumService().getId(short_name);
+            threadListId = getForumService().getListThread(forum_id,since,_order,limit);
         }else {
             int user_id = getUserService().getId(email);
             threadListId = getUserService().getListThread(user_id,_order,since,limit);

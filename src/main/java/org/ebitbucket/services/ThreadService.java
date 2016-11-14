@@ -36,7 +36,7 @@ public class ThreadService {
         return template.queryForObject(sql, Integer.class);
     }
 
-    public boolean subscribe(Integer thread, String user){
+    public boolean subscribe(Integer thread, int user){
         try {
             String sql="INSERT INTO `Subscriptions` (`user`, `thread`) VALUES (?, ?);";
             template.update(sql,user,thread);
@@ -147,8 +147,8 @@ public class ThreadService {
     }
 
     private static final RowMapper<ThreadDetail> THREAD_DETAIL_ROW_MAPPER = (rs, rowNum) -> new ThreadDetail(rs.getInt("id"),
-            rs.getString("forum"),
-            rs.getString("user"),
+            rs.getInt("forum"),
+            rs.getInt("user"),
             rs.getString("title"),
             rs.getString("message"),
             rs.getString("slug"),
