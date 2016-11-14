@@ -3,6 +3,7 @@ package org.ebitbucket.main;
 import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Forum.ForumRequest;
+import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.User.UserDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.services.*;
@@ -79,6 +80,32 @@ final public class ForumController extends MainController{
             userDetailsList.add(i, getUserService().profileAll(listUser.get(i)));
         }
         return Result.ok(userDetailsList);
+    }
+
+    @RequestMapping(path = "db/api/forum/listPosts", method = RequestMethod.GET)
+    public Result listForumPosts(@RequestParam(name = "forum") String short_name,
+                                 @RequestParam(name = "limit", required = false) Integer limit,
+                                 @RequestParam(name = "order", required = false) String order,
+                                 @RequestParam(name = "since", required = false) String since,
+                                 @RequestParam(name = "related", required = false) String[] related) {
+
+        if (StringUtils.isEmpty(short_name)) {
+            return Result.invalidReques();
+        }
+        if (!Functions.isArrayValid(related, "user", "forum", "thread")) {
+            return Result.incorrectRequest();
+        }
+        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
+        if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
+            return Result.incorrectRequest();
+
+        Integer forum_id = getForumService().getId(short_name);
+        List<Integer> postListId = getForumService().getListPost(forum_id,since,_order,limit);
+        List<PostDetails> postDetailsList= new ArrayList<>();
+        for (int i =0 ; i < postListId.size();i++){
+            postDetailsList.add(i,getPostDetail(postListId.get(i),related));
+        }
+        return Result.ok(postDetailsList);
     }
 
 }

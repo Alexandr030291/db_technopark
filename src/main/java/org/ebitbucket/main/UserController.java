@@ -2,6 +2,7 @@ package org.ebitbucket.main;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ebitbucket.model.FollowerRequest;
 import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.User.UserProfile;
@@ -144,22 +145,4 @@ final public class UserController extends MainController{
         return Result.ok(postDetailsList);
     }
 
-    public static class FollowerRequest {
-        private final String follower;
-        private final String followee;
-
-        @JsonCreator
-        public FollowerRequest(@JsonProperty("follower") String follower, @JsonProperty("followee") String followee){
-            this.follower = follower;
-            this.followee = followee;
-        }
-
-        public String getFollower() {
-            return follower;
-        }
-
-        public String getFollowee() {
-            return followee;
-        }
-    }
 }

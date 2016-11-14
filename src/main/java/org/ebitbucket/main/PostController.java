@@ -66,32 +66,6 @@ public class PostController extends MainController{
         return Result.ok(postDetails);
     }
 
-    @RequestMapping(path = "db/api/forum/listPosts", method = RequestMethod.GET)
-    public Result listForumPosts(@RequestParam(name = "forum") String short_name,
-                                 @RequestParam(name = "limit", required = false) Integer limit,
-                                 @RequestParam(name = "order", required = false) String order,
-                                 @RequestParam(name = "since", required = false) String since,
-                                 @RequestParam(name = "related", required = false) String[] related) {
-
-        if (StringUtils.isEmpty(short_name)) {
-            return Result.invalidReques();
-        }
-        if (!Functions.isArrayValid(related, "user", "forum", "thread")) {
-            return Result.incorrectRequest();
-        }
-        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
-        if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
-            return Result.incorrectRequest();
-
-        Integer forum_id = getForumService().getId(short_name);
-        List<Integer> postListId = getForumService().getListPost(forum_id,since,_order,limit);
-        List<PostDetails> postDetailsList= new ArrayList<>();
-        for (int i =0 ; i < postListId.size();i++){
-            postDetailsList.add(i,getPostDetail(postListId.get(i),related));
-        }
-        return Result.ok(postDetailsList);
-    }
-
     @RequestMapping(path = "db/api/post/list", method = RequestMethod.GET)
     public Result listPosts(@RequestParam(name = "forum", required = false) String short_name,
                             @RequestParam(name = "thread", required = false) Integer thread,
@@ -156,50 +130,4 @@ public class PostController extends MainController{
         PostDetails postDetails = getPostService().details(body.getPost());
         return Result.ok(postDetails);
     }
-
-    @RequestMapping(path = "db/api/thread/listPosts", method = RequestMethod.GET)
-    public Result  listPostsInThread(@RequestParam(name = "thread") Integer thread,
-                                     @RequestParam(name = "limit", required = false) Integer limit,
-                                     @RequestParam(name = "sort", required = false) String sort,
-                                     @RequestParam(name = "order", required = false) String order,
-                                     @RequestParam(name = "since", required = false) String since) {
-        if (StringUtils.isEmpty(sort)) {
-            sort = "flat";
-        }
-
-        if (!Functions.correctId(thread))
-            return Result.notFound();
-
-        since = Functions.validSince(since);
-        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
-        if (    !"desc".equalsIgnoreCase(_order) &&
-                !"asc".equalsIgnoreCase(_order)||
-                (limit != null && limit < 0) ||
-                StringUtils.isEmpty(since)){
-            return Result.incorrectRequest();
-        }
-        List<Integer> threadListId = new ArrayList<>();
-        switch (sort){
-            case "flat":
-                threadListId  = getThreadService().getListPost(thread,since,_order,limit);
-                break;
-            case "tree":
-                threadListId  = getThreadService().getListPostInTree(thread,since,_order,limit);
-                break;
-            case "parent_tree":
-                threadListId  = getThreadService().getListPostInParentTree(thread,since,_order,limit);
-                break;
-            default:
-                Result.incorrectRequest();
-        }
-        List<PostDetails> postDetailsList = new ArrayList<>();
-        Integer post;
-        for (int i =0 ; i < threadListId.size();i++){
-            post = threadListId.get(i);
-            postDetailsList.add(i,getPostDetail(post,null));
-        }
-        return Result.ok(postDetailsList);
-    }
-
-
 }

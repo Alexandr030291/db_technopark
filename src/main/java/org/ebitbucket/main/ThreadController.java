@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.MessageUpdate;
+import org.ebitbucket.model.Post.PostDetails;
+import org.ebitbucket.model.Subscription;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.Tread.ThreadRequest;
 import org.ebitbucket.model.Vote;
@@ -196,23 +198,48 @@ public class ThreadController extends MainController{
         return Result.ok(threadDetail);
     }
 
-    private static class Subscription{
-        private final Integer thread;
-        private final String user;
-
-        @JsonCreator
-        public Subscription(@JsonProperty("thread") Integer thread,
-                            @JsonProperty("user") String user) {
-            this.thread = thread;
-            this.user = user;
+    @RequestMapping(path = "db/api/thread/listPosts", method = RequestMethod.GET)
+    public Result  listPostsInThread(@RequestParam(name = "thread") Integer thread,
+                                     @RequestParam(name = "limit", required = false) Integer limit,
+                                     @RequestParam(name = "sort", required = false) String sort,
+                                     @RequestParam(name = "order", required = false) String order,
+                                     @RequestParam(name = "since", required = false) String since) {
+        if (StringUtils.isEmpty(sort)) {
+            sort = "flat";
         }
 
-        public Integer getThread() {
-            return thread;
-        }
+        if (!Functions.correctId(thread))
+            return Result.notFound();
 
-        public String getUser() {
-            return user;
+        since = Functions.validSince(since);
+        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
+        if (    !"desc".equalsIgnoreCase(_order) &&
+                !"asc".equalsIgnoreCase(_order)||
+                (limit != null && limit < 0) ||
+                StringUtils.isEmpty(since)){
+            return Result.incorrectRequest();
         }
+        List<Integer> threadListId = new ArrayList<>();
+        switch (sort){
+            case "flat":
+                threadListId  = getThreadService().getListPost(thread,since,_order,limit);
+                break;
+            case "tree":
+                threadListId  = getThreadService().getListPostInTree(thread,since,_order,limit);
+                break;
+            case "parent_tree":
+                threadListId  = getThreadService().getListPostInParentTree(thread,since,_order,limit);
+                break;
+            default:
+                Result.incorrectRequest();
+        }
+        List<PostDetails> postDetailsList = new ArrayList<>();
+        Integer post;
+        for (int i =0 ; i < threadListId.size();i++){
+            post = threadListId.get(i);
+            postDetailsList.add(i,getPostDetail(post,null));
+        }
+        return Result.ok(postDetailsList);
     }
+
 }
