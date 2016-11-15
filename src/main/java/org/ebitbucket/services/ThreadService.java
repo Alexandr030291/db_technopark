@@ -4,11 +4,15 @@ import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.sql.*;
 import java.util.List;
 
 @Service
@@ -29,11 +33,22 @@ public class ThreadService {
                       String date,
                       Boolean isClosed,
                       Boolean isDeleted) {
-        String sql = "INSERT INTO `Thread` (`forum`, `user`, `title`, `message`, `slug`, `date`, `isClosed`, `isDeleted`) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-        template.update(sql, forum, user, title, message,  slug, date, isClosed, isDeleted);
-        sql = "SELECT LAST_INSERT_ID();";
-        return template.queryForObject(sql, Integer.class);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        template.update(con -> {
+            PreparedStatement pst = con.prepareStatement("INSERT INTO `Thread` (`forum`, `user`, `title`, `message`, `slug`, `date`, `isClosed`, `isDeleted`) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
+            int index = 0;
+            pst.setInt(++index, forum);
+            pst.setInt(++index, user);
+            pst.setString(++index, title);
+            pst.setString(++index, message);
+            pst.setString(++index, slug);
+            pst.setString(++index, date);
+            pst.setObject(++index, isClosed, JDBCType.BOOLEAN);
+            pst.setObject(++index, isDeleted, JDBCType.BOOLEAN);
+            return pst;
+        }, keyHolder);
+        return keyHolder.getKey().intValue();
     }
 
     public boolean subscribe(Integer thread, int user){
