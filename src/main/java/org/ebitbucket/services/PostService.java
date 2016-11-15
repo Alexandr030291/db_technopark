@@ -4,10 +4,15 @@ import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Post.PostDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,10 +40,27 @@ public class PostService {
                       Boolean isDeleted) {
         String sql;
         String mpath ="";
-        sql = "INSERT INTO `Post` (`user`, `message`, `forum`, `thread`, `parent`, " +
-                "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`) VALUES " +
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-        template.update(sql, user, message, forum, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        template.update(con -> {
+            PreparedStatement pst = con.prepareStatement(
+                    "INSERT INTO `Post` (`user`, `message`, `forum`, `thread`, `parent`, " +
+                    "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`) VALUES " +
+                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+                    , Statement.RETURN_GENERATED_KEYS);
+            int index = 0;
+            pst.setInt(++index, user);
+            pst.setString(++index, message);
+            pst.setInt(++index, forum);
+            pst.setInt(++index, thread);
+            pst.setObject(++index, parent,JDBCType.INTEGER);
+            pst.setString(++index, date);
+            pst.setObject(++index, isApproved, JDBCType.BOOLEAN);
+            pst.setObject(++index, isHighlighted, JDBCType.BOOLEAN);
+            pst.setObject(++index, isEdited, JDBCType.BOOLEAN);
+            pst.setObject(++index, isSpam, JDBCType.BOOLEAN);
+            pst.setObject(++index, isDeleted, JDBCType.BOOLEAN);
+            return pst;
+        }, keyHolder);
         Integer root=0;
         if (parent!=null && parent>=0){
             sql = "SELECT `mpath`, `root` FROM `Post` WHERE `id` = ?;";
@@ -47,23 +69,19 @@ public class PostService {
             mpath = set.getString("mpath");
             root = set.getInt("root");
         }
-        sql = "SELECT LAST_INSERT_ID()";
-        Integer id =template.queryForObject(sql, Integer.class);
+
+        Integer id = keyHolder.getKey().intValue();
         if (root <= 0) {
             root = id;
         }
         sql= "UPDATE `Post` SET `root` = ?, `mpath` = ?  WHERE `id` = ?;";
-        int pow;
+
         int maxCharInMpath = 4;
         int startchar = 48;
         int code = 64;
         int [] hash = new int[maxCharInMpath];
-        for (int i = 0; i< maxCharInMpath; i++){
-            hash[i]= startchar;
-        }
-        for(int i = id, j = maxCharInMpath -1; i>0; i/=code,j--){
-            pow = i%code;
-            hash[j]+=pow;
+        for(int i = id, j = maxCharInMpath -1; j>=0; i/=code,j--){
+            hash[j]=startchar+i%code;
         }
         for (int i = 0; i< maxCharInMpath; i++){
             mpath+=(char)hash[i];

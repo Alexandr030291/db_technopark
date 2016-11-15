@@ -4,16 +4,14 @@ package org.ebitbucket.services;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 @Service
@@ -28,17 +26,13 @@ public class UserService {
 	public int create(String email, String name, String username, String about, Boolean isAnonymous) {
 		try {
 			KeyHolder keyHolder = new GeneratedKeyHolder();
-			template.update(
-					new PreparedStatementCreator() {
-						@Override
-						public PreparedStatement createPreparedStatement(Connection cnctn) throws SQLException {
-							PreparedStatement ps = cnctn.prepareStatement(
-									"INSERT INTO `Users` (`email`) VALUES (?)",
-									new String[] {"id"});
-							ps.setString(1, email);
-							return ps;
-						}
-					}
+			template.update(cnctn -> {
+                        PreparedStatement ps = cnctn.prepareStatement(
+                                "INSERT INTO `Users` (`email`) VALUES (?)",
+								Statement.RETURN_GENERATED_KEYS);
+                        ps.setString(1, email);
+                        return ps;
+                    }
 					, keyHolder);
 			String sql = "INSERT INTO `UserProfile` (`id`,`username`, `name`, `about`, `isAnonymous`) VALUES (?, ?, ?, ?, ?);";
 			template.update(sql,keyHolder.getKey().intValue(), username, name, about, isAnonymous);

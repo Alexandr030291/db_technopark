@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 @Service
 @Transactional
@@ -28,16 +29,12 @@ public class ForumService {
     public int create(String name, String short_name, Integer user_id) {
         try {
             KeyHolder keyHolder = new GeneratedKeyHolder();
-            template.update(
-                    new PreparedStatementCreator() {
-                        @Override
-                        public PreparedStatement createPreparedStatement(Connection cnctn) throws SQLException {
-                            PreparedStatement ps = cnctn.prepareStatement(
-                                    "INSERT INTO `Forums` (`short_name`) VALUES (?)",
-                                    new String[] {"id"});
-                            ps.setString(1, short_name);
-                            return ps;
-                        }
+            template.update(cnctn -> {
+                        PreparedStatement ps = cnctn.prepareStatement(
+                                "INSERT INTO `Forums` (`short_name`) VALUES (?)",
+                                Statement.RETURN_GENERATED_KEYS);
+                        ps.setString(1, short_name);
+                        return ps;
                     }
                     , keyHolder);
             String sql = "INSERT INTO `ForumDetail`(`id`,`name`, `user`) VALUE(?,?,?);";
