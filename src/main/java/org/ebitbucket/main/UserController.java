@@ -1,7 +1,5 @@
 package org.ebitbucket.main;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ebitbucket.model.FollowerRequest;
 import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.User.UserDetailAll;
@@ -16,8 +14,8 @@ import java.util.List;
 
 @RestController
 final public class UserController extends MainController{
-    public UserController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, MainService mainService) {
-        super(forumService, userService, threadService, postService, mainService);
+    public UserController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, ControlService controlService) {
+        super(forumService, userService, threadService, postService, controlService);
     }
 
     @RequestMapping(path = "db/api/user/create", method = RequestMethod.POST)

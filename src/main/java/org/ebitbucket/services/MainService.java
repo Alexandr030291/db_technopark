@@ -1,37 +1,36 @@
 package org.ebitbucket.services;
 
-import org.ebitbucket.main.Result;
-import org.springframework.dao.DataAccessException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@Service
-@Transactional
-public class MainService {
-    private final JdbcTemplate template;
+import org.ebitbucket.model.Forum.ForumDetail;
+import org.ebitbucket.model.ListObject;
+import org.ebitbucket.model.User.UserDetailAll;
+import org.springframework.jdbc.core.RowMapper;
 
-    public MainService(JdbcTemplate template) {
-        this.template = template;
-    }
+class MainService {
 
-    public void allClear(){
-        template.execute("SET FOREIGN_KEY_CHECKS = 0");
-        template.execute("TRUNCATE TABLE `Users`;");
-        template.execute("TRUNCATE TABLE `Forums`;");
-        template.execute("TRUNCATE TABLE `UserProfile`;");
-        template.execute("TRUNCATE TABLE `ForumDetail`;");
-        template.execute("TRUNCATE TABLE `Thread`;");
-        template.execute("TRUNCATE TABLE `Post`;");
-        template.execute("TRUNCATE TABLE `Followers`;");
-        template.execute("TRUNCATE TABLE `Subscriptions`;");
-        template.execute("SET FOREIGN_KEY_CHECKS = 1");
-    }
+    final RowMapper<UserDetailAll> USER_DETAIL_ALL_ROW_MAPPER = (rs, rowNum) ->
+            new UserDetailAll(
+                rs.getInt("id"),
+                rs.getString("username"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getString("about"),
+                rs.getBoolean("isAnonymous"));
 
-    @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity handleDataAccessException() {
-        return ResponseEntity.ok(Result.unkownError());
-    }
+    final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) ->
+            new ForumDetail(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("short_name"),
+                rs.getInt("user"));
+
+    final RowMapper<ListObject> Following_ROWMAPPER = (rs, rowNum) ->
+            new ListObject(rs.getInt("id"),rs.getString("email"));
+
+    final RowMapper<ListObject> Followee_ROWMAPPER = (rs, rowNum) ->
+            new ListObject(rs.getInt("id"),rs.getString("email"));
+
+    final RowMapper<ListObject> Subscriptions_ROWMAPPER = (rs, rowNum) ->
+            new ListObject(rs.getInt("user"),rs.getInt("thread"));
+
 }

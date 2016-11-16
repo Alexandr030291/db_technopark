@@ -3,11 +3,7 @@ package org.ebitbucket.main;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Tread.ThreadDetail;
-import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.services.*;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
@@ -18,14 +14,14 @@ public class MainController {
     private UserService userService;
     private ThreadService threadService;
     private PostService postService;
-    private MainService mainService;
+    private ControlService controlService;
 
-    public MainController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, MainService mainService) {
+    public MainController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, ControlService controlService) {
         this.forumService = forumService;
         this.userService = userService;
         this.threadService = threadService;
         this.postService = postService;
-        this.mainService = mainService;
+        this.controlService = controlService;
     }
 
     public static final class StatusResponse {
@@ -74,8 +70,8 @@ public class MainController {
         return postService;
     }
 
-    public MainService getMainService() {
-        return mainService;
+    public ControlService getControlService() {
+        return controlService;
     }
 
     public ThreadDetail getThreadDetails(Integer id, String[] related){

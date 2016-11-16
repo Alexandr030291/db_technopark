@@ -1,7 +1,5 @@
 package org.ebitbucket.main;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.MessageUpdate;
 import org.ebitbucket.model.Post.PostDetails;
@@ -18,8 +16,8 @@ import java.util.List;
 
 @RestController
 public class ThreadController extends MainController{
-    public ThreadController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, MainService mainService) {
-        super(forumService, userService, threadService, postService, mainService);
+    public ThreadController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, ControlService controlService) {
+        super(forumService, userService, threadService, postService, controlService);
     }
 
 

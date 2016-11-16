@@ -1,26 +1,22 @@
 package org.ebitbucket.main;
 
 import org.ebitbucket.lib.Functions;
-import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.MessageUpdate;
 import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Post.PostRequest;
-import org.ebitbucket.model.Tread.ThreadDetail;
-import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.model.Vote;
 import org.ebitbucket.services.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
 public class PostController extends MainController{
 
-    public PostController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, MainService mainService) {
-        super(forumService, userService, threadService, postService, mainService);
+    public PostController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, ControlService controlService) {
+        super(forumService, userService, threadService, postService, controlService);
     }
 
     @RequestMapping(path = "db/api/post/create", method = RequestMethod.POST)

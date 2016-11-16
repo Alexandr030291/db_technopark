@@ -1,25 +1,24 @@
 package org.ebitbucket.services;
 
 import org.ebitbucket.model.Forum.ForumDetail;
-import org.springframework.beans.NullValueInNestedPathException;
+import org.ebitbucket.model.ListObject;
+import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
+
 @Service
 @Transactional
-public class ForumService {
+public class ForumService extends MainService{
     private final JdbcTemplate template;
 
     public ForumService(JdbcTemplate template) {
@@ -88,25 +87,54 @@ public class ForumService {
 
     }
 
-    public List<Integer> getListUser(int forum_id, Integer since, String order, Integer limit){
-        String sql = "SELECT DISTINCT `UserProfile`.`id` FROM `UserProfile`" +
-                     "JOIN `Post` ON `Post`.`user` = `UserProfile`.`id` " +
-                     "AND `Post`.`forum` = ? " +
-                     "AND `UserProfile`.`id` >= ? ";
-
-        List<Integer> integerList=template.queryForList(sql, Integer.class, forum_id,since);
-        String root ="(";
-        for (Integer a_root : integerList) root += a_root.toString() + ", ";
-        root += "0)";
-        sql =   "SELECT `id`FROM `UserProfile` "+
-                "WHERE `id` IN " + root +
-                "ORDER BY `name` "+ order;
-        String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, Integer.class);
+    public List<UserDetailAll> getListUser(int forum_id, int since, String order, Integer limit){
+        String sql =    "SELECT DISTINCT `Users`.`id`, " +
+                        "`Users`.`email`, " +
+                        "`UserProfile`.`name`, " +
+                        "`UserProfile`.`username`, " +
+                        "`UserProfile`.`about`, " +
+                        "`UserProfile`.`isAnonymous` " +
+                        "FROM `Users` "+
+                        "JOIN `UserProfile`"+
+                        "ON `Users`.`id` = `UserProfile`.`id`"+
+                        "JOIN `Post` " +
+                        "ON `Post`.`user` = `Users`.`id` " +
+                        "AND `forum` = ? " +
+                        "AND `Users`.`id` >= ? " +
+                        "ORDER BY `name` "+ order;
+        String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+"":"";
+        List<UserDetailAll> users = template.query(sql+sqlLimit, USER_DETAIL_ALL_ROW_MAPPER,forum_id,since);
+        if (users.size()>0) {
+            HashMap<Integer,UserDetailAll> userList = new HashMap<>();
+            for (UserDetailAll user1 : users) userList.put(user1.getId(), user1);
+            String userListId = "(";
+            for (UserDetailAll user : users) {
+                userListId += user.getId().toString() + ", ";
+            }
+            userListId += "0)";
+            sql = "SELECT `id`, `email` " +
+                  "FROM `Users`" +
+                  "JOIN `Followers`  ON `Followers`.`followee` = `Users`.`id` " +
+                  "AND `follower` IN " + userListId;
+            List<ListObject> listFollowing = template.query(sql,Following_ROWMAPPER);
+            sql = "SELECT `id`, `email` " +
+                  "FROM `Users`" +
+                  "JOIN `Followers`  ON `Followers`.`follower` = `Users`.`id` " +
+                  "AND `followee` IN " + userListId;
+            List<ListObject> listFollowee =template.query(sql, Followee_ROWMAPPER);
+            sql = "SELECT `user`, `thread`  " +
+                  "FROM `Subscriptions` " +
+                  "WHERE `user` IN " + userListId;
+            List<ListObject> listSubscriptions = template.query(sql, Subscriptions_ROWMAPPER);
+            for (ListObject aListFollowee : listFollowee) {
+                userList.get(aListFollowee.getId()).addFollowers(aListFollowee.getValue().toString());
+            }
+            for (ListObject aListFollowing : listFollowing) {
+                userList.get(aListFollowing.getId()).addFollowing(aListFollowing.getValue().toString());
+            }
+            for (ListObject listSubscription : listSubscriptions)
+                userList.get(listSubscription.getId()).addSubscriptions((Integer)listSubscription.getValue());
+        }
+        return users;
     }
-
-    private final RowMapper<ForumDetail> Forum_DETAIL_ROWMAPPER = (rs, rowNum) -> new ForumDetail(rs.getInt("id"),
-            rs.getString("name"),
-            rs.getString("short_name"),
-            rs.getInt("user"));
 }

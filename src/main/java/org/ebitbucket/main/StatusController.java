@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class StatusController extends MainController{
-    public StatusController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, MainService mainService) {
-        super(forumService, userService, threadService, postService, mainService);
+    public StatusController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, ControlService controlService) {
+        super(forumService, userService, threadService, postService, controlService);
     }
 
     @RequestMapping(path = "db/api/clear", method = RequestMethod.POST)
     public Result clear() {
-        getMainService().allClear();
+        getControlService().allClear();
         return Result.ok();
     }
 

@@ -4,7 +4,6 @@ import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Forum.ForumRequest;
 import org.ebitbucket.model.Post.PostDetails;
-import org.ebitbucket.model.User.UserDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.services.*;
 import org.springframework.util.StringUtils;
@@ -13,12 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 final public class ForumController extends MainController{
 
-    public ForumController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, MainService mainService) {
-        super(forumService, userService, threadService, postService, mainService);
+    public ForumController(ForumService forumService, UserService userService, ThreadService threadService, PostService postService, ControlService controlService) {
+        super(forumService, userService, threadService, postService, controlService);
     }
 
     @RequestMapping(path = "db/api/forum/create", method = RequestMethod.POST)
@@ -74,12 +74,8 @@ final public class ForumController extends MainController{
             return Result.incorrectRequest();
 
         Integer forum_id = getForumService().getId(short_name);
-        List<Integer> listUser = getForumService().getListUser(forum_id, _since, _order, limit);
-        List<UserDetailAll> userDetailsList = new ArrayList<>();
-        for (int i = 0; i < listUser.size(); i++) {
-            userDetailsList.add(i, getUserService().profileAll(listUser.get(i)));
-        }
-        return Result.ok(userDetailsList);
+        List<UserDetailAll> listUser = getForumService().getListUser(forum_id, _since, _order, limit);
+        return Result.ok(listUser);
     }
 
     @RequestMapping(path = "db/api/forum/listPosts", method = RequestMethod.GET)

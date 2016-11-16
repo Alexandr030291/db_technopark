@@ -16,7 +16,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class UserService {
+public class UserService extends MainService{
 	private final JdbcTemplate template;
 
 	public UserService(JdbcTemplate template) {
@@ -54,26 +54,18 @@ public class UserService {
 		String sql = "SELECT * FROM `UserProfile` " +
 					 "JOIN `Users` ON `UserProfile`.`id`=`Users`.`id` " +
 					 "AND `Users`.`id` = ?;";
-		return template.queryForObject(sql, USER_DETAIL_ALL_ROW_MAPPER, id);
-	}
-
-	public List<String> following(Integer id) {
-		String sql = "SELECT `email` FROM `Users`" +
-					 "JOIN `Followers`  ON `Followers`.`followee` = `Users`.`id` " +
-					 "AND `follower` = ?;";
-		return template.queryForList(sql, String.class, id);
-	}
-
-	public List<String> followers(Integer id) {
-		String sql = "SELECT `email` FROM `Users`" +
-					 "JOIN `Followers`  ON `Followers`.`follower` = `Users`.`id` " +
-					 "AND `followee` = ?;";
-		return template.queryForList(sql, String.class, id);
-	}
-
-	public List<Integer> subscriptions(Integer id) {
-		String sql = "SELECT `thread` FROM `Subscriptions` WHERE `Subscriptions`.`user`=?;";
-		return template.queryForList(sql, Integer.class, id);
+		UserDetailAll User = template.queryForObject(sql, USER_DETAIL_ALL_ROW_MAPPER, id);
+		sql = "SELECT `email` FROM `Users`" +
+		      "JOIN `Followers`  ON `Followers`.`followee` = `Users`.`id` " +
+			  "AND `follower` = ?;";
+		User.setFollowing(template.queryForList(sql, String.class, id));
+		sql = "SELECT `email` FROM `Users`" +
+			  "JOIN `Followers`  ON `Followers`.`follower` = `Users`.`id` " +
+			  "AND `followee` = ?;";
+		User.setFollowers(template.queryForList(sql, String.class, id));
+		sql = "SELECT `thread` FROM `Subscriptions` WHERE `Subscriptions`.`user`=?";
+		User.setSubscriptions(template.queryForList(sql, Integer.class, id));
+		return User;
 	}
 
 	public int addFollowers(int follower, int followee) {
@@ -141,19 +133,4 @@ public class UserService {
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, Integer.class, id, since);
 	}
-
-	private final RowMapper<UserDetailAll> USER_DETAIL_ALL_ROW_MAPPER = (rs, rowNum) -> {
-		int id = rs.getInt("id");
-		UserDetailAll userDetailAll = new UserDetailAll(id,
-				rs.getString("username"),
-				rs.getString("name"),
-				rs.getString("email"),
-				rs.getString("about"),
-				rs.getBoolean("isAnonymous"));
-		userDetailAll.setFollowers(followers(id));
-		userDetailAll.setFollowing(following(id));
-		userDetailAll.setSubscriptions(subscriptions(id));
-		return userDetailAll;
-	};
-
 }

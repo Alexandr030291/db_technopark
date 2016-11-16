@@ -3,6 +3,7 @@ package org.ebitbucket.model.User;
 import org.ebitbucket.services.UserService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -26,6 +27,9 @@ public class UserDetailAll {
         this.email = email;
         this.id = id;
         this.isAnonymous = isAnonymous;
+        this.followers = new ArrayList<>();
+        this.following = new ArrayList<>();
+        this.subscriptions = new ArrayList<>();
     }
 
     public void setAbout(String about) {
@@ -82,6 +86,18 @@ public class UserDetailAll {
 
     public List<Integer> getSubscriptions() {
         return subscriptions;
+    }
+
+    public void addFollowing(String following){
+        this.following.add(following);
+    }
+
+    public void addFollowers(String follower){
+        this.followers.add(follower);
+    }
+
+    public void addSubscriptions(Integer subscription){
+        this.subscriptions.add(subscription);
     }
 }
 
