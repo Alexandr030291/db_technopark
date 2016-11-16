@@ -1,4 +1,3 @@
-
 package org.ebitbucket.model.User;
 
 import org.ebitbucket.services.UserService;
@@ -7,22 +6,25 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public class UserDetail {
+public class UserDetailAll {
 
     private String about;
     private String email;
-    private int id;
-    private boolean isAnonymous;
+    private Integer id;
+    private Boolean isAnonymous;
     private String name;
     private String username;
 
+    private List<String> followers;
+    private List<String> following;
+    private List<Integer> subscriptions;
 
-    public UserDetail(Integer id, String username, String name, String email,  String about, Boolean isAnonymous) {
+    public UserDetailAll(Integer id, String username, String name, String email,  String about, Boolean isAnonymous) {
         this.username = username;
         this.about = about;
         this.name = name;
         this.email = email;
-        this.id =id;
+        this.id = id;
         this.isAnonymous = isAnonymous;
     }
 
@@ -32,6 +34,18 @@ public class UserDetail {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setFollowers(List<String> followers) {
+        this.followers = followers;
+    }
+
+    public void setFollowing(List<String> following) {
+        this.following = following;
+    }
+
+    public void setSubscriptions(List<Integer> subscriptions) {
+        this.subscriptions = subscriptions;
     }
 
     public String getUsername() {
@@ -58,19 +72,17 @@ public class UserDetail {
         return isAnonymous;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public List<String> getFollowers() {
+        return followers;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public List<String> getFollowing() {
+        return following;
     }
 
-    public void setAnonymous(boolean anonymous) {
-        isAnonymous = anonymous;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public List<Integer> getSubscriptions() {
+        return subscriptions;
     }
 }
+
+
