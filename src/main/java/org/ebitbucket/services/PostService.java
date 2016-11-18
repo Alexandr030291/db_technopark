@@ -1,10 +1,8 @@
 package org.ebitbucket.services;
 
-import org.ebitbucket.model.Forum.Forum;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Tread.ThreadDetail;
-import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -104,57 +102,42 @@ public class PostService extends MainService{
         }
         String sql="SELECT * FROM `Post` WHERE `id` IN ( " + list.stream().map(String::valueOf).collect(Collectors.joining(",")) +")";
         List<PostDetails> postDetailsList = template.query(sql,POST_DETAIL_ROW_MAPPER);
-        for (PostDetails aPostDetailsList : postDetailsList) {
-            aPostDetailsList.setPoints(aPostDetailsList.getLikes()-aPostDetailsList.getDislikes());
-        }
 
         HashMap<Integer,PostDetails> postDetailsHashMap = new HashMap<>();
-        Set<Integer> userIdSet = new HashSet<>();
-        Set<Integer> forumIdSet= new HashSet<>();
-        Set<Integer> threadIdSet= new HashSet<>();
+        List<Integer> userIdSet = new ArrayList<>();
+        List<Integer> forumIdlist= new ArrayList<>();
+        List<Integer> threadIdSet= new ArrayList<>();
 
         for (PostDetails aPostDetailsList : postDetailsList) {
+            aPostDetailsList.setPoints(aPostDetailsList.getLikes()-aPostDetailsList.getDislikes());
             userIdSet.add((Integer) aPostDetailsList.getUser());
-            forumIdSet.add((Integer) aPostDetailsList.getForum());
+            forumIdlist.add((Integer) aPostDetailsList.getForum());
             threadIdSet.add((Integer) aPostDetailsList.getThread());
             postDetailsHashMap.put(aPostDetailsList.getId(), aPostDetailsList);
         }
+        List<Object> users;
+        List<Object> forums;
+        List<Object> threads;
+        if (related != null&&Arrays.asList(related).contains("user"))
+            users = getUserDetails(userIdSet,true);
+        else
+           users = getUserDetails(userIdSet,false);
 
-        int objectId;
-        if (related != null&&Arrays.asList(related).contains("user")){
-            HashMap<Integer,UserDetailAll> userHashMap = getUserDetailAllList(userIdSet);
-            for (PostDetails aPostDetailsList : postDetailsList) {
-                objectId = (Integer) aPostDetailsList.getUser();
-                aPostDetailsList.setUser(userHashMap.get(objectId));
-            }
-        }else{
-            HashMap<Integer,String> userHashMap = getEmailList(userIdSet);
-            for (PostDetails aPostDetailsList : postDetailsList) {
-                objectId = (Integer) aPostDetailsList.getUser();
-                aPostDetailsList.setUser(userHashMap.get(objectId));
-            }
-        }
+        if (related != null&& Arrays.asList(related).contains("forum"))
+            forums=getForumsDetails(forumIdlist,true);
+        else
+            forums=getForumsDetails(forumIdlist,false);
 
-        if (related != null&& Arrays.asList(related).contains("forum")) {
-            HashMap<Integer, ForumDetail> forumHashMap = getForumDetailsList(forumIdSet);
-            for (PostDetails aPostDetailsList : postDetailsList) {
-                objectId = (Integer) aPostDetailsList.getForum();
-                aPostDetailsList.setForum(forumHashMap.get(objectId));
-            }
-        }else{
-            HashMap<Integer, String> forumHashMap = getForumShortNameList(forumIdSet);
-            for (PostDetails aPostDetailsList : postDetailsList) {
-                objectId = (Integer) aPostDetailsList.getForum();
-                aPostDetailsList.setForum(forumHashMap.get(objectId));
-            }
-        }
-
-        if (related != null&&Arrays.asList(related).contains("thread")){
-            HashMap<Integer, ThreadDetail> threadHashMap = getThreadDetail(threadIdSet);
-            for (PostDetails aPostDetailsList : postDetailsList) {
-                objectId = (Integer) aPostDetailsList.getThread();
-                aPostDetailsList.setThread(threadHashMap.get(objectId));
-            }
+        if (related != null&&Arrays.asList(related).contains("thread"))
+           threads=getThreadDetails(threadIdSet,true);
+        else
+           threads=getThreadDetails(threadIdSet,false);
+        PostDetails post;
+        for (int i=0;i<postDetailsList.size();i++) {
+            post = postDetailsList.get(i);
+            post.setUser(users.get(i));
+            post.setForum(forums.get(i));
+            post.setThread(threads.get(i));
         }
 
         return postDetailsHashMap;

@@ -2,6 +2,8 @@ package org.ebitbucket.services;
 
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.ListObject;
+import org.ebitbucket.model.Post.PostDetails;
+import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -13,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -69,7 +71,7 @@ public class ForumService extends MainService{
         return template.queryForObject(sql, Integer.class);
     }
 
-    public List<Integer> getListThread(int forum_id,String since, String order, Integer limit){
+    public List<Integer> getListThreadId(int forum_id, String since, String order, Integer limit){
         String sql = "SELECT `Thread`.`id` FROM `Thread`  " +
                      "JOIN `ForumDetail` ON `Thread`.`forum` = `ForumDetail`.`id`" +
                      "AND `ForumDetail`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Thread`.`date`) >= 0 " +
@@ -86,6 +88,45 @@ public class ForumService extends MainService{
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, forum_id,since);
 
+    }
+
+    public HashMap<Integer,ThreadDetail> getThreadDetailList(List<Integer> list, String [] related) {
+        if (list.size() == 0) {
+            return new HashMap<>();
+        }
+        HashMap<Integer, ThreadDetail> threadDetailHashMap = new HashMap<>();
+        String sql = "SELECT * FROM `Thread` WHERE `id` IN ( " + list.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+        List<ThreadDetail> threadDetailList = template.query(sql, THREAD_DETAIL_ROW_MAPPER);
+        List<Integer> userIdList = new ArrayList<>();
+        List<Integer> forumIdlist = new ArrayList<>();
+
+        for (ThreadDetail aThreadDetailList : threadDetailList) {
+            aThreadDetailList.setPoints(aThreadDetailList.getLikes()-aThreadDetailList.getDislikes());
+            userIdList.add((Integer) aThreadDetailList.getUser());
+            forumIdlist.add((Integer) aThreadDetailList.getForum());
+            threadDetailHashMap.put(aThreadDetailList.getId(), aThreadDetailList);
+        }
+
+        List<Object> users;
+        List<Object> forums;
+        if (related != null && Arrays.asList(related).contains("user"))
+            users = getUserDetails(userIdList, true);
+        else
+            users = getUserDetails(userIdList, false);
+
+        if (related != null && Arrays.asList(related).contains("forum"))
+            forums = getForumsDetails(forumIdlist, true);
+        else
+            forums = getForumsDetails(forumIdlist, false);
+
+        ThreadDetail thread;
+        for (int i = 0; i < list.size(); i++) {
+            thread = threadDetailList.get(i);
+            thread.setUser(users.get(i));
+            thread.setForum(forums.get(i));
+        }
+
+        return threadDetailHashMap;
     }
 
     public List<UserDetailAll> getListUser(int forum_id, int since, String order, Integer limit){

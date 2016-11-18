@@ -15,9 +15,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -58,7 +56,7 @@ class MainService {
                 "FROM `Users` " +
                 "JOIN `UserProfile`" +
                 "ON `Users`.`id` = `UserProfile`.`id`" +
-                "ON `Users`.`id` IN ( " + list.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
+                "AND `Users`.`id` IN (" + list.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
         List<UserDetailAll> users = template.query(sql, USER_DETAIL_ALL_ROW_MAPPER);
         HashMap<Integer, UserDetailAll> userDetailAllHashMap = new HashMap<>();
         for (UserDetailAll user1 : users) userDetailAllHashMap.put(user1.getId(), user1);
@@ -126,7 +124,7 @@ class MainService {
         return forumHashMap;
     }
 
-    HashMap<Integer,ThreadDetail> getThreadDetail(Set<Integer> list){
+    public HashMap<Integer,ThreadDetail> getThreadDetailMap(Set<Integer> list){
         if (list.size()==0){
             return new HashMap<>();
         }
@@ -156,6 +154,59 @@ class MainService {
             threadHashMap.put(aThreadList.getId(), aThreadList);
         }
         return threadHashMap;
+    }
+
+    List<Object> getUserDetails(List<Integer> list, Boolean detail){
+        List<Object> userDetailAllList=new ArrayList<>();
+        Set<Integer> userIdSet = new HashSet<>();
+        for (Integer aList : list)
+            userIdSet.add(aList);
+
+        if (detail){
+            HashMap<Integer,UserDetailAll> userHashMap = getUserDetailAllList(userIdSet);
+            for (int i =0; i<list.size();i++)
+                userDetailAllList.add(i,userHashMap.get(list.get(i)));
+        }else{
+            HashMap<Integer,String> userHashMap = getEmailList(userIdSet);
+            for (int i =0; i<list.size();i++)
+                userDetailAllList.add(i,userHashMap.get(list.get(i)));
+        }
+        return userDetailAllList;
+    }
+
+    List<Object> getForumsDetails(List<Integer> list,Boolean detail){
+        List<Object> arrayList=new ArrayList<>();
+        Set<Integer> forumIdSet = new HashSet<>();
+        for (Integer aList : list)
+            forumIdSet.add(aList);
+
+        if (detail){
+            HashMap<Integer,ForumDetail> userHashMap = getForumDetailsList(forumIdSet);
+            for (int i =0; i<list.size();i++)
+                arrayList.add(i,userHashMap.get(list.get(i)));
+        }else{
+            HashMap<Integer,String> userHashMap = getForumShortNameList(forumIdSet);
+            for (int i =0; i<list.size();i++)
+                arrayList.add(i,userHashMap.get(list.get(i)));
+        }
+        return arrayList;
+    }
+
+    List<Object> getThreadDetails(List<Integer> list,Boolean detail){
+
+        List<Object> arrayList=new ArrayList<>();
+        if(!detail) {
+            for (int i=0;i<list.size();i++)
+                arrayList.add(i,list.get(i));
+            return arrayList;
+        }
+        Set<Integer> threadIdSet = new HashSet<>();
+        for (Integer aList : list)
+            threadIdSet.add(aList);
+        HashMap<Integer,ThreadDetail> userHashMap = getThreadDetailMap(threadIdSet);
+        for (int i =0; i<list.size();i++)
+            arrayList.add(i,userHashMap.get(list.get(i)));
+        return arrayList;
     }
 
     final RowMapper<UserDetailAll> USER_DETAIL_ALL_ROW_MAPPER = (rs, rowNum) ->

@@ -89,32 +89,6 @@ public class ThreadController extends MainController{
         return Result.ok(threadDetail);
     }
 
-    @RequestMapping(path = "db/api/forum/listThreads", method = RequestMethod.GET)
-    public Result listForumThreads(@RequestParam(name = "forum") String short_name,
-                                   @RequestParam(name = "limit", required = false) Integer limit,
-                                   @RequestParam(name = "order", required = false) String order,
-                                   @RequestParam(name = "since", required = false) String since,
-                                   @RequestParam(name = "related", required = false) String[] related) {
-
-        if (StringUtils.isEmpty(short_name)) {
-            return Result.invalidReques();
-        }
-        if (!Functions.isArrayValid(related, "user", "forum")) {
-            return Result.incorrectRequest();
-        }
-        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
-        if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
-            return Result.incorrectRequest();
-
-        Integer forum_id = getForumService().getId(short_name);
-        List<Integer> threadListId = getForumService().getListThread(forum_id,since,_order,limit);
-        List<ThreadDetail> threadDetailsList = new ArrayList<>();
-        for (int i =0 ; i < threadListId.size();i++){
-            threadDetailsList.add(i, getThreadDetails(threadListId.get(i),related));
-        }
-        return Result.ok(threadDetailsList);
-    }
-
     @RequestMapping(path = "db/api/thread/list", method = RequestMethod.GET)
     public Result listThreads(@RequestParam(name = "forum", required = false) String short_name,
                               @RequestParam(name = "user", required = false) String email,
@@ -132,7 +106,7 @@ public class ThreadController extends MainController{
         List<Integer> threadListId;
         if (!StringUtils.isEmpty(short_name)){
             Integer forum_id = getForumService().getId(short_name);
-            threadListId = getForumService().getListThread(forum_id,since,_order,limit);
+            threadListId = getForumService().getListThreadId(forum_id,since,_order,limit);
         }else {
             int user_id = getUserService().getId(email);
             threadListId = getUserService().getListThread(user_id,_order,since,limit);

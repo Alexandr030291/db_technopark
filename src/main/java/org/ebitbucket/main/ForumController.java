@@ -4,6 +4,7 @@ import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Forum.ForumRequest;
 import org.ebitbucket.model.Post.PostDetails;
+import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.ebitbucket.services.*;
 import org.springframework.util.StringUtils;
@@ -73,6 +74,33 @@ final public class ForumController extends MainController{
         Integer forum_id = getForumService().getId(short_name);
         List<UserDetailAll> listUser = getForumService().getListUser(forum_id, _since, _order, limit);
         return Result.ok(listUser);
+    }
+
+    @RequestMapping(path = "db/api/forum/listThreads", method = RequestMethod.GET)
+    public Result listForumThreads(@RequestParam(name = "forum") String short_name,
+                                   @RequestParam(name = "limit", required = false) Integer limit,
+                                   @RequestParam(name = "order", required = false) String order,
+                                   @RequestParam(name = "since", required = false) String since,
+                                   @RequestParam(name = "related", required = false) String[] related) {
+
+        if (StringUtils.isEmpty(short_name)) {
+            return Result.invalidReques();
+        }
+        if (!Functions.isArrayValid(related, "user", "forum")) {
+            return Result.incorrectRequest();
+        }
+        String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
+        if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
+            return Result.incorrectRequest();
+
+        Integer forum_id = getForumService().getId(short_name);
+        List<Integer> threadListId = getForumService().getListThreadId(forum_id,since,_order,limit);
+        HashMap<Integer,ThreadDetail> threadDetailsMap = getForumService().getThreadDetailList(threadListId,related);
+        List<ThreadDetail> threadDetailsList = new ArrayList<>();
+        for (int i=0;i<threadListId.size();i++){
+            threadDetailsList.add(i,threadDetailsMap.get(threadListId.get(i)));
+        }
+        return Result.ok(threadDetailsList);
     }
 
     @RequestMapping(path = "db/api/forum/listPosts", method = RequestMethod.GET)
