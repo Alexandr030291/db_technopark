@@ -62,7 +62,8 @@ CREATE TABLE `Thread`
   `isDeleted` BOOLEAN NOT NULL DEFAULT FALSE ,
 
   `likes` INT NOT NULL DEFAULT 0,
-  `dislikes` INT NOT NULL DEFAULT 0
+  `dislikes` INT NOT NULL DEFAULT 0,
+  `posts` INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE `Subscriptions`

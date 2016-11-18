@@ -12,11 +12,11 @@ public class UserProfile {
 	private final Boolean isAnonymous;
 
 	@JsonCreator
-	private UserProfile(@JsonProperty("username") String username,
-			@JsonProperty("about") String about,
-			@JsonProperty("name") String name,
-			@JsonProperty("email") String email,
-			@JsonProperty("isAnonymous") Boolean isAnonymous) {
+	public UserProfile(@JsonProperty("username") String username,
+					   @JsonProperty("about") String about,
+					   @JsonProperty("name") String name,
+					   @JsonProperty("email") String email,
+					   @JsonProperty("isAnonymous") Boolean isAnonymous) {
 		this.username = username;
 		this.about = about;
 		this.name = name;

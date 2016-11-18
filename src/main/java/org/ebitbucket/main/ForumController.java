@@ -9,10 +9,7 @@ import org.ebitbucket.services.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 final public class ForumController extends MainController{
@@ -97,9 +94,10 @@ final public class ForumController extends MainController{
 
         Integer forum_id = getForumService().getId(short_name);
         List<Integer> postListId = getForumService().getListPost(forum_id,since,_order,limit);
-        List<PostDetails> postDetailsList= new ArrayList<>();
+        List<PostDetails> postDetailsList = new ArrayList<>();
+        HashMap<Integer,PostDetails> postDetailsHashMap= getPostService().listPost(postListId,related);
         for (int i =0 ; i < postListId.size();i++){
-            postDetailsList.add(i,getPostDetail(postListId.get(i),related));
+            postDetailsList.add(i,postDetailsHashMap.get(postListId.get(i)));
         }
         return Result.ok(postDetailsList);
     }

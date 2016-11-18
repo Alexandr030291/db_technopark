@@ -4,7 +4,6 @@ package org.ebitbucket.services;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
@@ -20,6 +19,7 @@ public class UserService extends MainService{
 	private final JdbcTemplate template;
 
 	public UserService(JdbcTemplate template) {
+		super(template);
 		this.template = template;
 	}
 

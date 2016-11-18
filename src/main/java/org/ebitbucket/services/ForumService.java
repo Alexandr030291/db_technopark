@@ -22,6 +22,7 @@ public class ForumService extends MainService{
     private final JdbcTemplate template;
 
     public ForumService(JdbcTemplate template) {
+        super(template);
         this.template = template;
     }
 

@@ -7,6 +7,8 @@ import org.ebitbucket.services.*;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 @RestController
 public class MainController {
@@ -118,7 +120,8 @@ public class MainController {
                     isClosed,
                     isDeleted,
                     likes,
-                    dislikes
+                    dislikes,
+                    0
             );
             threadDetail.setPoints(threadDetail.getLikes() - threadDetail.getDislikes());
             threadDetail.setPosts(getThreadService().getCountPost(id));
@@ -188,5 +191,10 @@ public class MainController {
             postDetails.setPoints(likes-dislikes);
         }
         return postDetails;
+    }
+
+    //сделан на случай если нужно будет делить на несколько транзакций из-за большого числа
+    public HashMap<Integer,PostDetails> getListPostDetail(List<Integer> list, String [] related){
+        return postService.listPost(list,related);
     }
 }

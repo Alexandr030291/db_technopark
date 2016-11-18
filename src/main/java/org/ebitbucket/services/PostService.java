@@ -1,9 +1,11 @@
 package org.ebitbucket.services;
 
-import org.ebitbucket.lib.Functions;
+import org.ebitbucket.model.Forum.Forum;
+import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Post.PostDetails;
+import org.ebitbucket.model.Tread.ThreadDetail;
+import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -13,17 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
 @Transactional
-public class PostService {
+public class PostService extends MainService{
     private final JdbcTemplate template;
 
     public PostService(JdbcTemplate template) {
+        super(template);
         this.template = template;
     }
 
@@ -87,12 +89,75 @@ public class PostService {
             mpath+=(char)hash[i];
         }
         template.update(sql,root,mpath,id);
+        template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?",thread);
         return id;
     }
 
     public PostDetails details(int id){
         String sql="SELECT * FROM `Post` WHERE `id` = ?";
         return template.queryForObject(sql,POST_DETAIL_ROW_MAPPER,id);
+    }
+
+    public HashMap<Integer,PostDetails> listPost(List<Integer> list, String[] related){
+        if (list.size()==0){
+            return new HashMap<>();
+        }
+        String sql="SELECT * FROM `Post` WHERE `id` IN ( " + list.stream().map(String::valueOf).collect(Collectors.joining(",")) +")";
+        List<PostDetails> postDetailsList = template.query(sql,POST_DETAIL_ROW_MAPPER);
+        for (PostDetails aPostDetailsList : postDetailsList) {
+            aPostDetailsList.setPoints(aPostDetailsList.getLikes()-aPostDetailsList.getDislikes());
+        }
+
+        HashMap<Integer,PostDetails> postDetailsHashMap = new HashMap<>();
+        Set<Integer> userIdSet = new HashSet<>();
+        Set<Integer> forumIdSet= new HashSet<>();
+        Set<Integer> threadIdSet= new HashSet<>();
+
+        for (PostDetails aPostDetailsList : postDetailsList) {
+            userIdSet.add((Integer) aPostDetailsList.getUser());
+            forumIdSet.add((Integer) aPostDetailsList.getForum());
+            threadIdSet.add((Integer) aPostDetailsList.getThread());
+            postDetailsHashMap.put(aPostDetailsList.getId(), aPostDetailsList);
+        }
+
+        int objectId;
+        if (related != null&&Arrays.asList(related).contains("user")){
+            HashMap<Integer,UserDetailAll> userHashMap = getUserDetailAllList(userIdSet);
+            for (PostDetails aPostDetailsList : postDetailsList) {
+                objectId = (Integer) aPostDetailsList.getUser();
+                aPostDetailsList.setUser(userHashMap.get(objectId));
+            }
+        }else{
+            HashMap<Integer,String> userHashMap = getEmailList(userIdSet);
+            for (PostDetails aPostDetailsList : postDetailsList) {
+                objectId = (Integer) aPostDetailsList.getUser();
+                aPostDetailsList.setUser(userHashMap.get(objectId));
+            }
+        }
+
+        if (related != null&& Arrays.asList(related).contains("forum")) {
+            HashMap<Integer, ForumDetail> forumHashMap = getForumDetailsList(forumIdSet);
+            for (PostDetails aPostDetailsList : postDetailsList) {
+                objectId = (Integer) aPostDetailsList.getForum();
+                aPostDetailsList.setForum(forumHashMap.get(objectId));
+            }
+        }else{
+            HashMap<Integer, String> forumHashMap = getForumShortNameList(forumIdSet);
+            for (PostDetails aPostDetailsList : postDetailsList) {
+                objectId = (Integer) aPostDetailsList.getForum();
+                aPostDetailsList.setForum(forumHashMap.get(objectId));
+            }
+        }
+
+        if (related != null&&Arrays.asList(related).contains("thread")){
+            HashMap<Integer, ThreadDetail> threadHashMap = getThreadDetail(threadIdSet);
+            for (PostDetails aPostDetailsList : postDetailsList) {
+                objectId = (Integer) aPostDetailsList.getThread();
+                aPostDetailsList.setThread(threadHashMap.get(objectId));
+            }
+        }
+
+        return postDetailsHashMap;
     }
 
     public int getCount(){
@@ -106,11 +171,15 @@ public class PostService {
     }
 
     public int remove(int id){
+        int thread = template.queryForObject("SELECT `thread` FROM `Post` WHERE `id` = ?",Integer.class,id);
+        template.update("UPDATE `Thread` SET `posts` = `posts` - 1 WHERE `id` = ?",thread);
         String sql = "UPDATE `Post` SET `isDeleted` = TRUE WHERE `id` = ?;";
         return template.update(sql,id);
     }
 
     public int restore(int id){
+        int thread = template.queryForObject("SELECT `thread` FROM `Post` WHERE `id` = ?",Integer.class,id);
+        template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?",thread);
         String sql = "UPDATE `Post` SET `isDeleted` = FALSE WHERE `id` = ?;";
         return template.update(sql,id);
     }
@@ -119,19 +188,4 @@ public class PostService {
         String sql = "UPDATE `Post` SET `" +vote+ "` =  `" +vote+ "` + 1 WHERE `id` = ?;";
         return template.update(sql,id);
     }
-
-    private static final RowMapper<PostDetails> POST_DETAIL_ROW_MAPPER = (rs, rowNum) -> new PostDetails(rs.getInt("id"),
-            rs.getInt("forum"),
-            rs.getInt("user"),
-            rs.getInt("thread"),
-            (rs.getString("parent")!=null)?rs.getInt("parent"):null,
-            rs.getString("message"),
-            Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
-            rs.getBoolean("isApproved"),
-            rs.getBoolean("isDeleted"),
-            rs.getBoolean("isEdited"),
-            rs.getBoolean("isHighlighted"),
-            rs.getBoolean("isSpam"),
-            rs.getInt("dislikes"),
-            rs.getInt("likes"));
 }

@@ -1,11 +1,8 @@
 package org.ebitbucket.services;
 
-import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
@@ -17,10 +14,11 @@ import java.util.List;
 
 @Service
 @Transactional
-public class ThreadService {
+public class ThreadService extends MainService{
     private final JdbcTemplate template;
 
     public ThreadService(JdbcTemplate template) {
+        super(template);
         this.template = template;
 
     }
@@ -139,6 +137,7 @@ public class ThreadService {
     }
 
     public int remove(int id){
+        template.update("UPDATE `Thread` SET `posts` = 0 WHERE `id` = ?",id);
         String sql ="UPDATE `Thread` SET `isDeleted` = TRUE WHERE `id` = ?;";
         if (template.update(sql,id)==0)
             return 0;
@@ -148,12 +147,12 @@ public class ThreadService {
     }
 
     public int restore(int id){
-        String sql ="UPDATE `Thread` SET `isDeleted` = FALSE WHERE `id` = ?;";
+        String sql ="UPDATE `Post` SET `isDeleted` = FALSE WHERE `thread` = ?;";
         if (template.update(sql,id)==0)
             return 0;
-        sql = "UPDATE `Post` SET `isDeleted` = FALSE WHERE `thread` = ?;";
-        template.update(sql,id);
-        return 1;
+        int posts = template.queryForObject("SELECT count(*) FROM `Post` WHERE `thread` = ?",Integer.class,id);
+        sql = "UPDATE `Thread` SET `isDeleted` = FALSE, `posts` = ? WHERE `id` = ?;";
+        return template.update(sql,posts,id);
     }
 
     public int update(int id, String message,String slug){
@@ -161,15 +160,4 @@ public class ThreadService {
         return template.update(sql,message,slug,id);
     }
 
-    private static final RowMapper<ThreadDetail> THREAD_DETAIL_ROW_MAPPER = (rs, rowNum) -> new ThreadDetail(rs.getInt("id"),
-            rs.getInt("forum"),
-            rs.getInt("user"),
-            rs.getString("title"),
-            rs.getString("message"),
-            rs.getString("slug"),
-            Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
-            rs.getBoolean("isClosed"),
-            rs.getBoolean("isDeleted"),
-            rs.getInt("likes"),
-            rs.getInt("dislikes"));
 }

@@ -20,7 +20,7 @@ public class ThreadDetail {
     private Integer likes;
     private Integer dislikes;
 
-    public ThreadDetail(Integer id, Object forum, Object user, String title, String message, String slug, String date, Boolean isClosed, Boolean isDeleted, Integer likes,Integer dislikes) {
+    public ThreadDetail(Integer id, Object forum, Object user, String title, String message, String slug, String date, Boolean isClosed, Boolean isDeleted, Integer likes,Integer dislikes, Integer posts) {
         this.id = id;
         this.forum = forum;
         this.user = user;
@@ -32,6 +32,7 @@ public class ThreadDetail {
         this.isDeleted = isDeleted;
         this.likes = likes;
         this.dislikes = dislikes;
+        this.posts = posts;
     }
 
     public Integer getId() {
