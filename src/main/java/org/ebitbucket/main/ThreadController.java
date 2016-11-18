@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -111,9 +112,11 @@ public class ThreadController extends MainController{
             int user_id = getUserService().getId(email);
             threadListId = getUserService().getListThread(user_id,_order,since,limit);
         }
+        HashMap<Integer,ThreadDetail> threadDetailHashMap =getForumService().getThreadDetailList(threadListId,null);
         List<ThreadDetail> threadDetailsLists = new ArrayList<>();
+
         for (int i =0 ; i < threadListId.size();i++){
-            threadDetailsLists.add(i, getThreadDetails(threadListId.get(i),null));
+            threadDetailsLists.add(i, threadDetailHashMap.get(threadListId.get(i)));
         }
         return Result.ok(threadDetailsLists);
     }
@@ -191,25 +194,24 @@ public class ThreadController extends MainController{
                 StringUtils.isEmpty(since)){
             return Result.incorrectRequest();
         }
-        List<Integer> threadListId = new ArrayList<>();
+        List<Integer> postListId = new ArrayList<>();
         switch (sort){
             case "flat":
-                threadListId  = getThreadService().getListPost(thread,since,_order,limit);
+                postListId  = getThreadService().getListPost(thread,since,_order,limit);
                 break;
             case "tree":
-                threadListId  = getThreadService().getListPostInTree(thread,since,_order,limit);
+                postListId  = getThreadService().getListPostInTree(thread,since,_order,limit);
                 break;
             case "parent_tree":
-                threadListId  = getThreadService().getListPostInParentTree(thread,since,_order,limit);
+                postListId  = getThreadService().getListPostInParentTree(thread,since,_order,limit);
                 break;
             default:
                 Result.incorrectRequest();
         }
         List<PostDetails> postDetailsList = new ArrayList<>();
-        Integer post;
-        for (int i =0 ; i < threadListId.size();i++){
-            post = threadListId.get(i);
-            postDetailsList.add(i,getPostDetail(post,null));
+        HashMap<Integer,PostDetails> postDetailsHashMap= getPostService().listPost(postListId,null);
+        for (int i =0 ; i < postListId.size();i++){
+            postDetailsList.add(i,postDetailsHashMap.get(postListId.get(i)));
         }
         return Result.ok(postDetailsList);
     }
