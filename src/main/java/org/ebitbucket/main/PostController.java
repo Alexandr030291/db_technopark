@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -83,9 +84,10 @@ public class PostController extends MainController{
         }else {
             postListId = getThreadService().getListPost(thread,since,order,limit);
         }
-        List<PostDetails> postDetailsList= new ArrayList<>();
+        List<PostDetails> postDetailsList = new ArrayList<>();
+        HashMap<Integer,PostDetails> postDetailsHashMap= getPostService().listPost(postListId,null);
         for (int i =0 ; i < postListId.size();i++){
-            postDetailsList.add(i,getPostDetail(postListId.get(i),null));
+            postDetailsList.add(i,postDetailsHashMap.get(postListId.get(i)));
         }
         return Result.ok(postDetailsList);
     }

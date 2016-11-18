@@ -42,10 +42,10 @@ public class ForumControllerTest {
 
     @Test
     public void getUserList() throws Exception{
-        List<UserProfile> userProfileList = function.generedUserList(5);
-        List<ForumRequest> forumRequestList =function.generedForumList(5,userProfileList);
-        List<ThreadRequest> threadRequestList = function.generedThreadList(5,userProfileList,forumRequestList);
-        List<PostRequest> postRequestList = function.generedPostList(5,userProfileList,forumRequestList,threadRequestList);
+   //     List<UserProfile> userProfileList = function.generedUserList(5);
+   //     List<ForumRequest> forumRequestList =function.generedForumList(5,userProfileList);
+   //     List<ThreadRequest> threadRequestList = function.generedThreadList(5,userProfileList,forumRequestList);
+   //     List<PostRequest> postRequestList = function.generedPostList(5,userProfileList,forumRequestList,threadRequestList);
     }
 
 }
