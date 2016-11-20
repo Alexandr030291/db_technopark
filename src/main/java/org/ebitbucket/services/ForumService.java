@@ -60,7 +60,8 @@ public class ForumService extends MainService{
     }
 
     public ForumDetail detail(Integer id){
-        String sql = "SELECT * FROM `ForumDetail` " +
+        String sql = "SELECT `Forums`.`id`, `Forums`.`short_name`, `ForumDetail`.`name`, `ForumDetail`.`user` " +
+                     "FROM `ForumDetail` " +
                      "JOIN `Forums` ON   `ForumDetail`.`id`= `Forums`.`id`  " +
                      "AND `Forums`.`id` = ?;";
         return template.queryForObject(sql, Forum_DETAIL_ROWMAPPER ,id);

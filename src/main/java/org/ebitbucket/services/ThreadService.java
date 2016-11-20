@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -111,9 +112,7 @@ public class ThreadService extends MainService{
                     "AND `Thread`.`id` = ? "  +
                     "ORDER BY `Post`.`root` "+order + LIMIT;
         List<Integer> integerList=template.queryForList(sql,Integer.class, since,thread);
-        String root ="(";
-        for (Integer a_root : integerList) root += a_root.toString() + ", ";
-        root += "0)";
+        String root ="(" + integerList.stream().map(String::valueOf).collect(Collectors.joining(", ")) +")";
         sql =   "SELECT `id` FROM `Post` "+
                 "WHERE `root` IN " + root+
                 "AND `date`>= ? "+
