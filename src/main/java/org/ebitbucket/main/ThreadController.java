@@ -32,11 +32,11 @@ public class ThreadController extends MainController{
                 StringUtils.isEmpty(body.getDate()) ||
                 body.getClosed() == null)
             return Result.invalidReques();
-        Integer forum_id = getForumService().getId(body.getForum());
-        Integer user_id = getUserService().getId(body.getUser());
-        if (forum_id==null || user_id == null)
+        int forum_id = getForumService().getId(body.getForum());
+        int user_id = getUserService().getId(body.getUser());
+        if (forum_id==0 || user_id == 0)
             return Result.invalidReques();
-        int id = getThreadService().create(
+        int id = getThreadService().createNotAutoId(
                 forum_id,
                 user_id,
                 body.getTitle(),

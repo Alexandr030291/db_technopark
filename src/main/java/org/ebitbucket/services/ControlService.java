@@ -28,6 +28,7 @@ public class ControlService {
         template.execute("TRUNCATE TABLE `Followers`;");
         template.execute("TRUNCATE TABLE `Subscriptions`;");
         template.execute("SET FOREIGN_KEY_CHECKS = 1");
+        template.update("UPDATE `LastId` SET `count` = 0 WHERE `count` > 0");
     }
 
     @ExceptionHandler(DataAccessException.class)

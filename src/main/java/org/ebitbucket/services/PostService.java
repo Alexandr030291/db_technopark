@@ -1,9 +1,10 @@
 package org.ebitbucket.services;
 
-import org.ebitbucket.model.Forum.ForumDetail;
+import org.ebitbucket.model.Post.Mpath;
 import org.ebitbucket.model.Post.PostDetails;
-import org.ebitbucket.model.Tread.ThreadDetail;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -16,6 +17,8 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.System.out;
+
 
 @Service
 @Transactional
@@ -26,7 +29,7 @@ public class PostService extends MainService{
         super(template);
         this.template = template;
     }
-
+/*
     public int create(Integer user,
                       String message,
                       Integer forum,
@@ -40,6 +43,20 @@ public class PostService extends MainService{
                       Boolean isDeleted) {
         String sql;
         String mpath ="";
+        Integer root=0;
+        boolean flagError = false;
+        if (parent!=null && parent>=0){
+            sql = "SELECT `mpath`, `root` FROM `Post` WHERE `id` = ?;";
+            List<Mpath> set = template.query(sql,POST_MPATH_ROW_MAPPER,parent);
+            if (set.size()>0){
+                mpath = set.get(0).getPath();
+                root = set.get(0).getRoot();
+            }else{
+                mpath = intToCode(parent);
+                root = parent;
+                flagError =true;
+            }
+        }
         KeyHolder keyHolder = new GeneratedKeyHolder();
         template.update(con -> {
             PreparedStatement pst = con.prepareStatement(
@@ -61,36 +78,25 @@ public class PostService extends MainService{
             pst.setObject(++index, isDeleted, JDBCType.BOOLEAN);
             return pst;
         }, keyHolder);
-        Integer root=0;
-        if (parent!=null && parent>=0){
-            sql = "SELECT `mpath`, `root` FROM `Post` WHERE `id` = ?;";
-            SqlRowSet set = template.queryForRowSet(sql, parent);
-            set.next();
-            mpath = set.getString("mpath");
-            root = set.getInt("root");
-        }
-
         Integer id = keyHolder.getKey().intValue();
         if (root <= 0) {
             root = id;
         }
         sql= "UPDATE `Post` SET `root` = ?, `mpath` = ?  WHERE `id` = ?;";
-
-        int maxCharInMpath = 4;
-        int startchar = 48;
-        int code = 64;
-        int [] hash = new int[maxCharInMpath];
-        for(int i = id, j = maxCharInMpath -1; j>=0; i/=code,j--){
-            hash[j]=startchar+i%code;
-        }
-        for (int i = 0; i< maxCharInMpath; i++){
-            mpath+=(char)hash[i];
-        }
+        mpath+= intToCode(id);
         template.update(sql,root,mpath,id);
-        template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?",thread);
+        if (flagError){
+            out.print("from post = "+id+" not found parent = " + parent+"\n");
+        }
+        try {
+            template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?;", thread);
+        }catch (DeadlockLoserDataAccessException dl){
+            out.print("from post = "+id+" error. Thread.posts++ for id =" +thread+"\n");
+            template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?;", thread);
+        }
         return id;
     }
-
+*/
     public PostDetails details(int id){
         String sql="SELECT * FROM `Post` WHERE `id` = ?";
         return template.queryForObject(sql,POST_DETAIL_ROW_MAPPER,id);
@@ -171,4 +177,73 @@ public class PostService extends MainService{
         String sql = "UPDATE `Post` SET `" +vote+ "` =  `" +vote+ "` + 1 WHERE `id` = ?;";
         return template.update(sql,id);
     }
+
+
+    public int createNotAutoId(Integer user,
+                      String message,
+                      Integer forum,
+                      Integer thread,
+                      Integer parent,
+                      String date,
+                      Boolean isApproved,
+                      Boolean isHighlighted,
+                      Boolean isEdited,
+                      Boolean isSpam,
+                      Boolean isDeleted) {
+        template.update("UPDATE `LastId` SET `count` = `count` + 1 WHERE `table` = ?","post");
+        String sql = "SELECT `count` FROM `LastId` WHERE `table` = ?";
+        Integer id = template.queryForObject(sql,Integer.class,"post");
+        String mpath ="";
+        Integer root;
+        boolean flagError = false;
+        if (parent!=null && parent>=0){
+            sql = "SELECT `mpath`, `root` FROM `Post` WHERE `id` = ?;";
+            List<Mpath> set = template.query(sql,POST_MPATH_ROW_MAPPER,parent);
+            if (set.size()>0){
+                mpath = set.get(0).getPath();
+                root = set.get(0).getRoot();
+            }else{
+                mpath = intToCode(parent);
+                root = parent;
+                flagError =true;
+            }
+        }else{
+            root = id;
+        }
+        mpath+= intToCode(id);
+        sql =  "INSERT INTO `Post` (`id`,`user`, `message`, `forum`, `thread`, `parent`, " +
+                "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`, `mpath`, `root`) VALUES " +
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+        template.update(sql,id, user, message, forum, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted, mpath, root);
+        if (flagError){
+            out.print("from post = "+id+" not found parent = " + parent+"\n");
+        }
+        try {
+            template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?;", thread);
+        }catch (DeadlockLoserDataAccessException dl){
+            out.print("from post = "+id+" error. Thread.posts++ for id =" +thread+"\n");
+            template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?;", thread);
+        }
+        return id;
+    }
+
+
+    private String intToCode(Integer id){
+        String mpath ="";
+        int maxCharInMpath = 4;
+        int startchar = 48;
+        int code = 64;
+        int [] hash = new int[maxCharInMpath];
+        for(int i = id, j = maxCharInMpath -1; j>=0; i/=code,j--){
+            hash[j]=startchar+i%code;
+        }
+        for (int i = 0; i< maxCharInMpath; i++){
+            mpath+=(char)hash[i];
+        }
+        return mpath;
+    }
+
+    private final RowMapper<Mpath> POST_MPATH_ROW_MAPPER = (rs, rowNum) ->
+            new Mpath(rs.getString("mpath"),rs.getInt("root"));
 }

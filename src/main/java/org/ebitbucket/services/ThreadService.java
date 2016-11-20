@@ -87,7 +87,7 @@ public class ThreadService extends MainService{
     public List<Integer> getListPost(Integer id, String since, String order, Integer limit){
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
-                    "AND `Thread`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
+                    "AND `Thread`.`id` = ? AND `Post`.`date` >= ? " +
                     "ORDER BY `Post`.`date` " + order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, id,since);
@@ -97,7 +97,7 @@ public class ThreadService extends MainService{
     public List<Integer> getListPostInTree(Integer id, String since,String order, Integer limit){
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
-                    "AND `Thread`.`id` = ? AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 " +
+                    "AND `Thread`.`id` = ? AND `Post`.`date` >= ? " +
                     "ORDER BY `Post`.`root` " + order + ", `Post`.`mpath` ASC";
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, id,since);
@@ -107,7 +107,7 @@ public class ThreadService extends MainService{
         String LIMIT = (limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
         String sql ="SELECT  DISTINCT `Post`.`root` FROM `Post` " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id` " +
-                    "AND TIMESTAMPDIFF(SECOND, ?, `Post`.`date`) >= 0 "+
+                    "AND `Post`.`date`) >= ? "+
                     "AND `Thread`.`id` = ? "  +
                     "ORDER BY `Post`.`root` "+order + LIMIT;
         List<Integer> integerList=template.queryForList(sql,Integer.class, since,thread);
@@ -116,7 +116,7 @@ public class ThreadService extends MainService{
         root += "0)";
         sql =   "SELECT `id` FROM `Post` "+
                 "WHERE `root` IN " + root+
-                "AND TIMESTAMPDIFF(SECOND, ?, `date`) >= 0 "+
+                "AND `date`>= ? "+
                 "ORDER BY `root` " + order + ", `mpath` ASC;";
         return template.queryForList(sql, Integer.class, since);
     }
@@ -158,6 +158,23 @@ public class ThreadService extends MainService{
     public int update(int id, String message,String slug){
         String sql = "UPDATE `Thread` SET `message` = ?, `slug` = ? WHERE `id` = ?;";
         return template.update(sql,message,slug,id);
+    }
+
+    public int createNotAutoId(int forum,
+                      int user,
+                      String title,
+                      String message,
+                      String slug,
+                      String date,
+                      Boolean isClosed,
+                      Boolean isDeleted) {
+        template.update("UPDATE `LastId` SET `count` = `count` + 1 WHERE `table` = ?","thread");
+        String sql = "SELECT `count` FROM `LastId` WHERE `table` = ?";
+        Integer id = template.queryForObject(sql,Integer.class,"thread");
+        sql = "INSERT INTO `Thread` (`id`,`forum`, `user`, `title`, `message`, `slug`, `date`, `isClosed`, `isDeleted`) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        template.update(sql,id,forum,user,title,message,slug,date,isClosed,isDeleted);
+        return id;
     }
 
 }

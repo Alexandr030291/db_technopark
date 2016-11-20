@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -134,11 +135,9 @@ final public class UserController extends MainController{
         int id = getUserService().getId(email);
         List<Integer> posts = getUserService().getListPost(id,_order,since,limit);
         List<PostDetails> postDetailsList = new ArrayList<>();
-        PostDetails postDetails;
+        HashMap<Integer,PostDetails> postDetailsHashMap= getPostService().listPost(posts,null);
         for (int i =0 ; i < posts.size();i++){
-            postDetailsList.add(i, getPostDetail(posts.get(i),null));
-            postDetails=postDetailsList.get(i);
-            postDetails.setPoints(postDetails.getLikes()-postDetails.getDislikes());
+            postDetailsList.add(i,postDetailsHashMap.get(posts.get(i)));
         }
         return Result.ok(postDetailsList);
     }

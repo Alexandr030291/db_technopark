@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static java.lang.System.out;
+
 @RestController
 public class PostController extends MainController{
 
@@ -21,7 +23,7 @@ public class PostController extends MainController{
     }
 
     @RequestMapping(path = "db/api/post/create", method = RequestMethod.POST)
-    public Result forumCreate(@RequestBody PostRequest body){
+    public Result postCreate(@RequestBody PostRequest body){
         if (    StringUtils.isEmpty(body.getDate()) ||
                 StringUtils.isEmpty(body.getForum()) ||
                 StringUtils.isEmpty(body.getUser()) ||
@@ -30,7 +32,9 @@ public class PostController extends MainController{
             return Result.invalidReques();
         int user_id = getUserService().getId(body.getUser());
         int forum_id = getForumService().getId(body.getForum());
-        int id = getPostService().create(user_id,
+        if (forum_id==0 || user_id == 0)
+            return Result.invalidReques();
+        int id = getPostService().createNotAutoId(user_id,
                 body.getMessage(),
                 forum_id,
                 body.getThread(),

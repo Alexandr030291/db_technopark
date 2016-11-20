@@ -290,21 +290,4 @@ class MainService {
                 rs.getInt("dislikes"),
                 rs.getInt("likes"));
 
-    final RowMapper<PostDetails> POST_DETAIL_SHORT_ROW_MAPPER = (rs, rowNum) ->
-            new PostDetails(
-                    rs.getInt("id"),
-                    rs.getString("short_name"),
-                    rs.getString("email"),
-                    rs.getInt("thread"),
-                    (rs.getString("parent")!=null)?rs.getInt("parent"):null,
-                    rs.getString("message"),
-                    Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
-                    rs.getBoolean("isApproved"),
-                    rs.getBoolean("isDeleted"),
-                    rs.getBoolean("isEdited"),
-                    rs.getBoolean("isHighlighted"),
-                    rs.getBoolean("isSpam"),
-                    rs.getInt("dislikes"),
-                    rs.getInt("likes"));
-
 }
