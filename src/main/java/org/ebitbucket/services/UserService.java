@@ -53,15 +53,15 @@ public class UserService extends MainService{
 	public UserDetailAll profileAll(Integer id) {
 		String sql = "SELECT * FROM `UserProfile` " +
 					 "JOIN `Users` ON `UserProfile`.`id`=`Users`.`id` " +
-					 "AND `Users`.`id` = ?;";
+					 "WHERE `Users`.`id` = ?;";
 		UserDetailAll User = template.queryForObject(sql, USER_DETAIL_ALL_ROW_MAPPER, id);
 		sql = "SELECT `email` FROM `Users`" +
 		      "JOIN `Followers`  ON `Followers`.`followee` = `Users`.`id` " +
-			  "AND `follower` = ?;";
+			  "WHERE `follower` = ?;";
 		User.setFollowing(template.queryForList(sql, String.class, id));
 		sql = "SELECT `email` FROM `Users`" +
 			  "JOIN `Followers`  ON `Followers`.`follower` = `Users`.`id` " +
-			  "AND `followee` = ?;";
+			  "WHERE `followee` = ?;";
 		User.setFollowers(template.queryForList(sql, String.class, id));
 		sql = "SELECT `thread` FROM `Subscriptions` WHERE `Subscriptions`.`user`=?";
 		User.setSubscriptions(template.queryForList(sql, Integer.class, id));
@@ -91,7 +91,7 @@ public class UserService extends MainService{
 	public List<Integer> getListFollowers(Integer id, String order, Integer since_id, Integer limit) {
 		String sql = "SELECT `follower` FROM `Followers` " +
 					 "JOIN `UserProfile` ON `Followers`.`follower`=`UserProfile`.`id` " +
-					 "AND `Followers`.`followee` = ?  " +
+					 "WHERE `Followers`.`followee` = ?  " +
 				 	 "AND `UserProfile`.`id` >= ? " +
 				 	 "ORDER BY `UserProfile`.`name` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
@@ -102,7 +102,7 @@ public class UserService extends MainService{
 		String sql = "SELECT `followee` " +
 					 "FROM `Followers` " +
 					 "JOIN `UserProfile` ON `Followers`.`followee`=`UserProfile`.`id` " +
-					 "AND `Followers`.`follower` = ?  " +
+					 "WHERE `Followers`.`follower` = ?  " +
 					 "AND `UserProfile`.`id` >= ? " +
 					 "ORDER BY `UserProfile`.`name` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
@@ -128,7 +128,7 @@ public class UserService extends MainService{
 	public List<Integer> getListThread(int id, String order, String since, Integer limit) {
 		String sql = "SELECT `Thread`.`id` FROM `Thread` " +
 					 "JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`id`" +
-					 "AND `UserProfile`.`id` = ? AND `Thread`.`date` >= ? " +
+					 "WHERE `UserProfile`.`id` = ? AND `Thread`.`date` >= ? " +
 					 "ORDER BY `Thread`.`date` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, Integer.class, id, since);

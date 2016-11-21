@@ -89,10 +89,14 @@ public class UserDetailAll {
     }
 
     public void addFollowing(String following){
+        if (following == null)
+            return;
         this.following.add(following);
     }
 
     public void addFollowers(String follower){
+        if (follower == null)
+            return;
         this.followers.add(follower);
     }
 

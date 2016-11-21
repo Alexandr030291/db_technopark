@@ -148,35 +148,22 @@ public class ForumService extends MainService{
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+"":"";
         List<UserDetailAll> users = template.query(sql+sqlLimit, USER_DETAIL_ALL_ROW_MAPPER,forum_id,since);
         if (users.size()>0) {
-            HashMap<Integer,UserDetailAll> userList = new HashMap<>();
-            for (UserDetailAll user1 : users) userList.put(user1.getId(), user1);
             String userListId = "(";
             for (UserDetailAll user : users) {
                 userListId += user.getId().toString() + ", ";
             }
             userListId += "0)";
-            sql = "SELECT `id`, `email` " +
-                  "FROM `Users`" +
-                  "JOIN `Followers`  ON `Followers`.`followee` = `Users`.`id` " +
-                  "AND `follower` IN " + userListId;
-            List<ListObject> listFollowing = template.query(sql,Following_ROWMAPPER);
-            sql = "SELECT `id`, `email` " +
-                  "FROM `Users`" +
-                  "JOIN `Followers`  ON `Followers`.`follower` = `Users`.`id` " +
-                  "AND `followee` IN " + userListId;
-            List<ListObject> listFollowee =template.query(sql, Followee_ROWMAPPER);
+            users = setFollowee(users,userListId);
+            HashMap<Integer,UserDetailAll> userDetailAllHashMap = new HashMap<>();
+            for (UserDetailAll user1 : users) userDetailAllHashMap.put(user1.getId(), user1);
+
+
             sql = "SELECT `user`, `thread`  " +
                   "FROM `Subscriptions` " +
                   "WHERE `user` IN " + userListId;
             List<ListObject> listSubscriptions = template.query(sql, Subscriptions_ROWMAPPER);
-            for (ListObject aListFollowee : listFollowee) {
-                userList.get(aListFollowee.getId()).addFollowers(aListFollowee.getValue().toString());
-            }
-            for (ListObject aListFollowing : listFollowing) {
-                userList.get(aListFollowing.getId()).addFollowing(aListFollowing.getValue().toString());
-            }
             for (ListObject listSubscription : listSubscriptions)
-                userList.get(listSubscription.getId()).addSubscriptions((Integer)listSubscription.getValue());
+                userDetailAllHashMap.get(listSubscription.getId()).addSubscriptions((Integer)listSubscription.getValue());
         }
         return users;
     }

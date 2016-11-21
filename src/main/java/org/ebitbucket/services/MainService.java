@@ -2,6 +2,7 @@ package org.ebitbucket.services;
 
 
 import org.ebitbucket.lib.Functions;
+import org.ebitbucket.model.FollowerTable;
 import org.ebitbucket.model.Forum.Forum;
 import org.ebitbucket.model.Forum.ForumDetail;
 import org.ebitbucket.model.Forum.ForumDetailKey;
@@ -47,6 +48,7 @@ class MainService {
         if (list.size() == 0) {
             return new HashMap<>();
         }
+        String userListIN="("+ list.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
         String sql = "SELECT DISTINCT `Users`.`id`, " +
                 "`Users`.`email`, " +
                 "`UserProfile`.`name`, " +
@@ -56,34 +58,44 @@ class MainService {
                 "FROM `Users` " +
                 "JOIN `UserProfile`" +
                 "ON `Users`.`id` = `UserProfile`.`id`" +
-                "AND `Users`.`id` IN (" + list.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
+                "WHERE `Users`.`id` IN "+userListIN;
         List<UserDetailAll> users = template.query(sql, USER_DETAIL_ALL_ROW_MAPPER);
+        users = setFollowee(users,userListIN);
         HashMap<Integer, UserDetailAll> userDetailAllHashMap = new HashMap<>();
         for (UserDetailAll user1 : users) userDetailAllHashMap.put(user1.getId(), user1);
-        sql = "SELECT `id`, `email` " +
-                "FROM `Users`" +
-                "JOIN `Followers`  ON `Followers`.`followee` = `Users`.`id` " +
-                "AND `follower` IN ( " + list.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
-        List<ListObject> listFollowing = template.query(sql, Following_ROWMAPPER);
-        sql = "SELECT `id`, `email` " +
-                "FROM `Users`" +
-                "JOIN `Followers`  ON `Followers`.`follower` = `Users`.`id` " +
-                "AND `followee` IN ( " + list.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
-        List<ListObject> listFollowee = template.query(sql, Followee_ROWMAPPER);
         sql = "SELECT `user`, `thread`  " +
                 "FROM `Subscriptions` " +
-                "WHERE `user` IN ( " + list.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
+                "WHERE `user` IN "+userListIN;
         List<ListObject> listSubscriptions = template.query(sql, Subscriptions_ROWMAPPER);
-        for (ListObject aListFollowee : listFollowee) {
-            userDetailAllHashMap.get(aListFollowee.getId()).addFollowers(aListFollowee.getValue().toString());
-        }
-        for (ListObject aListFollowing : listFollowing) {
-            userDetailAllHashMap.get(aListFollowing.getId()).addFollowing(aListFollowing.getValue().toString());
-        }
         for (ListObject listSubscription : listSubscriptions)
             userDetailAllHashMap.get(listSubscription.getId()).addSubscriptions((Integer) listSubscription.getValue());
         return userDetailAllHashMap;
     }
+
+    public List<UserDetailAll> setFollowee(List<UserDetailAll> userList,String userListIN){
+        String sql = "SELECT  `UFwers`.`id` as `frID`, " +
+                "`UFwers`.`email` as `frEmail`, " +
+                "`UFwee`.`id` as feId, " +
+                "`UFwee`.`email` as feEmail " +
+                "FROM `Followers` " +
+                "JOIN `Users` AS `UFwers` ON `UFwers`.`id` = `Followers`.`followee` " +
+                "JOIN `Users` AS `UFwee` ON `UFwee`.`id` = `Followers`.`follower` " +
+                "WHERE `follower` IN "+userListIN + " " +
+                "OR `followee` IN " +userListIN;
+        List<FollowerTable> listFollowing = template.query(sql, folloverTableRowMapper);
+        HashMap<Integer,String> followingMap = new HashMap<>();
+        HashMap<Integer,String> followerMap = new HashMap<>();
+        for (FollowerTable aListFollowing : listFollowing) {
+            followerMap.put(aListFollowing.getFolloweeId(), aListFollowing.getFollowerEmail());
+            followingMap.put(aListFollowing.getFollowerId(), aListFollowing.getFolloweeEmail());
+        }
+        for (UserDetailAll anUserList : userList) {
+            anUserList.addFollowing(followingMap.get(anUserList.getId()));
+            anUserList.addFollowers(followerMap.get(anUserList.getId()));
+        }
+        return userList;
+    }
+
 
     HashMap<Integer,String> getForumShortNameList(Set<Integer> list){
         if (list.size()==0){
@@ -113,7 +125,7 @@ class MainService {
                 "ON `ForumDetail`.`id` = `Forums`.`id` "+
                 "JOIN `Users` " +
                 "ON  `ForumDetail`.`user` = `Users`.`id` " +
-                "AND `Forums`.`id` IN ( "
+                "WHERE `Forums`.`id` IN ( "
                 + list.stream().map(String::valueOf).collect(Collectors.joining(",")) +")";
         List<ForumDetailKey> forumList = template.query(sql,Forum_DETAIL_Email_ROWMAPPER);
         HashMap<Integer, ForumDetail> forumHashMap = new HashMap<>();
@@ -145,7 +157,7 @@ class MainService {
                 "ON `Forums`.`id` = `Thread`.`forum` " +
                 "JOIN `Users` " +
                 "ON `Users`.`id` = `Thread`.`user` "+
-                "AND `Thread`.`id` IN ("
+                "WHERE `Thread`.`id` IN ("
                 + list.stream().map(String::valueOf).collect(Collectors.joining(",")) +")";
         List<ThreadDetail> threadList = template.query(sql,THREAD_DETAIL_SHORT_ROW_MAPPER);
         HashMap<Integer, ThreadDetail> threadHashMap = new HashMap<>();
@@ -238,11 +250,9 @@ class MainService {
     final RowMapper<Forum> forumRowMapper = (rs, rowNum) ->
             new Forum(rs.getInt("id"),rs.getString("short_name"));
 
-    final RowMapper<ListObject> Following_ROWMAPPER = (rs, rowNum) ->
-            new ListObject(rs.getInt("id"),rs.getString("email"));
+    final RowMapper<FollowerTable> folloverTableRowMapper = (rs, rowNum) ->
+            new FollowerTable(rs.getInt("frId"),rs.getString("frEmail"),rs.getInt("feId"),rs.getString("feEmail"));
 
-    final RowMapper<ListObject> Followee_ROWMAPPER = (rs, rowNum) ->
-            new ListObject(rs.getInt("id"),rs.getString("email"));
 
     final RowMapper<ListObject> Subscriptions_ROWMAPPER = (rs, rowNum) ->
             new ListObject(rs.getInt("user"),rs.getInt("thread"));

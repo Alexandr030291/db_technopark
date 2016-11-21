@@ -88,7 +88,7 @@ public class ThreadService extends MainService{
     public List<Integer> getListPost(Integer id, String since, String order, Integer limit){
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
-                    "AND `Thread`.`id` = ? AND `Post`.`date` >= ? " +
+                    "WHERE `Thread`.`id` = ? AND `Post`.`date` >= ? " +
                     "ORDER BY `Post`.`date` " + order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, id,since);
@@ -98,7 +98,7 @@ public class ThreadService extends MainService{
     public List<Integer> getListPostInTree(Integer id, String since,String order, Integer limit){
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
-                    "AND `Thread`.`id` = ? AND `Post`.`date` >= ? " +
+                    "WHERE `Thread`.`id` = ? AND `Post`.`date` >= ? " +
                     "ORDER BY `Post`.`root` " + order + ", `Post`.`mpath` ASC";
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, id,since);
@@ -108,13 +108,13 @@ public class ThreadService extends MainService{
         String LIMIT = (limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
         String sql ="SELECT  DISTINCT `Post`.`root` FROM `Post` " +
                     "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id` " +
-                    "AND `Post`.`date`) >= ? "+
+                    "AND `Post`.`date` >= ? "+
                     "AND `Thread`.`id` = ? "  +
                     "ORDER BY `Post`.`root` "+order + LIMIT;
         List<Integer> integerList=template.queryForList(sql,Integer.class, since,thread);
         String root ="(" + integerList.stream().map(String::valueOf).collect(Collectors.joining(", ")) +")";
         sql =   "SELECT `id` FROM `Post` "+
-                "WHERE `root` IN " + root+
+                "WHERE `root` IN " + root+ " "+
                 "AND `date`>= ? "+
                 "ORDER BY `root` " + order + ", `mpath` ASC;";
         return template.queryForList(sql, Integer.class, since);
