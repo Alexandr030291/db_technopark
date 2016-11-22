@@ -29,74 +29,7 @@ public class PostService extends MainService{
         super(template);
         this.template = template;
     }
-/*
-    public int create(Integer user,
-                      String message,
-                      Integer forum,
-                      Integer thread,
-                      Integer parent,
-                      String date,
-                      Boolean isApproved,
-                      Boolean isHighlighted,
-                      Boolean isEdited,
-                      Boolean isSpam,
-                      Boolean isDeleted) {
-        String sql;
-        String mpath ="";
-        Integer root=0;
-        boolean flagError = false;
-        if (parent!=null && parent>=0){
-            sql = "SELECT `mpath`, `root` FROM `Post` WHERE `id` = ?;";
-            List<Mpath> set = template.query(sql,POST_MPATH_ROW_MAPPER,parent);
-            if (set.size()>0){
-                mpath = set.get(0).getPath();
-                root = set.get(0).getRoot();
-            }else{
-                mpath = intToCode(parent);
-                root = parent;
-                flagError =true;
-            }
-        }
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(con -> {
-            PreparedStatement pst = con.prepareStatement(
-                    "INSERT INTO `Post` (`user`, `message`, `forum`, `thread`, `parent`, " +
-                    "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`) VALUES " +
-                    "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
-                    , Statement.RETURN_GENERATED_KEYS);
-            int index = 0;
-            pst.setInt(++index, user);
-            pst.setString(++index, message);
-            pst.setInt(++index, forum);
-            pst.setInt(++index, thread);
-            pst.setObject(++index, parent,JDBCType.INTEGER);
-            pst.setString(++index, date);
-            pst.setObject(++index, isApproved, JDBCType.BOOLEAN);
-            pst.setObject(++index, isHighlighted, JDBCType.BOOLEAN);
-            pst.setObject(++index, isEdited, JDBCType.BOOLEAN);
-            pst.setObject(++index, isSpam, JDBCType.BOOLEAN);
-            pst.setObject(++index, isDeleted, JDBCType.BOOLEAN);
-            return pst;
-        }, keyHolder);
-        Integer id = keyHolder.getKey().intValue();
-        if (root <= 0) {
-            root = id;
-        }
-        sql= "UPDATE `Post` SET `root` = ?, `mpath` = ?  WHERE `id` = ?;";
-        mpath+= intToCode(id);
-        template.update(sql,root,mpath,id);
-        if (flagError){
-            out.print("from post = "+id+" not found parent = " + parent+"\n");
-        }
-        try {
-            template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?;", thread);
-        }catch (DeadlockLoserDataAccessException dl){
-            out.print("from post = "+id+" error. Thread.posts++ for id =" +thread+"\n");
-            template.update("UPDATE `Thread` SET `posts` = `posts` + 1 WHERE `id` = ?;", thread);
-        }
-        return id;
-    }
-*/
+
     public PostDetails details(int id){
         String sql="SELECT * FROM `Post` WHERE `id` = ?";
         return template.queryForObject(sql,POST_DETAIL_ROW_MAPPER,id);

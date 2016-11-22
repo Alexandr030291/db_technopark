@@ -41,7 +41,7 @@ public class ForumService extends MainService{
                     , keyHolder);
             String sql = "INSERT INTO `ForumDetail`(`id`,`name`, `user`) VALUE(?,?,?);";
             template.update(sql, keyHolder.getKey().intValue(), name, user_id);
-            return template.queryForObject("SELECT LAST_INSERT_ID()",Integer.class);
+            return keyHolder.getKey().intValue();
         } catch (DuplicateKeyException dk) {
             return -1;
         }
@@ -75,10 +75,10 @@ public class ForumService extends MainService{
     public List<Integer> getListThreadId(int forum_id, String since, String order, Integer limit){
         String sql = "SELECT `Thread`.`id` FROM `Thread`  " +
                      "JOIN `ForumDetail` ON `Thread`.`forum` = `ForumDetail`.`id`" +
-                     "AND `ForumDetail`.`id` = ? AND `Thread`.`date` >= ? " +
+                     "AND `ForumDetail`.`id` = ? AND `Thread`.`date` >= '" + since +"' "+
                      "ORDER BY `Thread`.`date` " + order;
         String sqlLimit=(limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, Integer.class, forum_id,since);
+        return template.queryForList(sql+sqlLimit, Integer.class, forum_id);
     }
 
     public List<Integer> getListPost(int forum_id, String since, String order, Integer limit){

@@ -119,18 +119,18 @@ public class UserService extends MainService{
 		String sql = 	"SELECT `id` " +
 						"FROM `Post` " +
 						"WHERE `user` = ? " +
-						"AND `date` >= ? " +
+						"AND `date` >= '" + since + "' "+
 						"ORDER BY `date` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
-		return template.queryForList(sql + sqlLimit, Integer.class, user_id, since);
+		return template.queryForList(sql + sqlLimit, Integer.class, user_id);
 	}
 
 	public List<Integer> getListThread(int id, String order, String since, Integer limit) {
 		String sql = "SELECT `Thread`.`id` FROM `Thread` " +
 					 "JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`id`" +
-					 "WHERE `UserProfile`.`id` = ? AND `Thread`.`date` >= ? " +
+					 "WHERE `UserProfile`.`id` = ? AND `Thread`.`date` >= '" + since +"' "+
 					 "ORDER BY `Thread`.`date` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
-		return template.queryForList(sql + sqlLimit, Integer.class, id, since);
+		return template.queryForList(sql + sqlLimit, Integer.class, id);
 	}
 }
