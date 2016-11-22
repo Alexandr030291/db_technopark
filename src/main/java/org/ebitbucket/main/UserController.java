@@ -9,9 +9,7 @@ import org.ebitbucket.services.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @RestController
 final public class UserController extends MainController{
@@ -91,9 +89,12 @@ final public class UserController extends MainController{
 
         int id = getUserService().getId(user);
         List<Integer> listFollowers = getUserService().getListFollowers(id,_order,_since_id,_limit);
+        Set<Integer> userSet = new HashSet<>();
+        for (Integer listFollower : listFollowers) userSet.add(listFollower);
+        HashMap <Integer,UserDetailAll> userDetailAllHashMap = getUserService().getUserDetailAllList(userSet);
         List<UserDetailAll> userDetailList = new ArrayList<>();
         for (int i =0 ; i<listFollowers.size();i++){
-            userDetailList.add(i,getUserService().profileAll(listFollowers.get(i)));
+            userDetailList.add(i,userDetailAllHashMap.get(listFollowers.get(i)));
         }
         return Result.ok(userDetailList);
     }
@@ -112,10 +113,13 @@ final public class UserController extends MainController{
         Integer _since_id = (since_id==null)?0:since_id;
 
         int id = getUserService().getId(user);
-        List<Integer> listFollowing = getUserService().getListFollowing(id,_order,_since_id,limit);
+        List<Integer> listFollowings = getUserService().getListFollowing(id,_order,_since_id,limit);
+        Set<Integer> userSet = new HashSet<>();
+        for (Integer listFollowing : listFollowings) userSet.add(listFollowing);
+        HashMap <Integer,UserDetailAll> userDetailAllHashMap = getUserService().getUserDetailAllList(userSet);
         List<UserDetailAll> userDetailList = new ArrayList<>();
-        for (int i =0 ; i<listFollowing.size();i++){
-            userDetailList.add(i,getUserService().profileAll(listFollowing.get(i)));
+        for (int i =0 ; i<listFollowings.size();i++){
+            userDetailList.add(i,userDetailAllHashMap.get(listFollowings.get(i)));
         }
         return Result.ok(userDetailList);
     }

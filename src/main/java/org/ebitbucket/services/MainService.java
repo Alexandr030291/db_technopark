@@ -44,7 +44,7 @@ class MainService {
         return userHashMap;
     }
 
-    HashMap<Integer,UserDetailAll> getUserDetailAllList(Set<Integer> list) {
+    public HashMap<Integer,UserDetailAll> getUserDetailAllList(Set<Integer> list) {
         if (list.size() == 0) {
             return new HashMap<>();
         }
