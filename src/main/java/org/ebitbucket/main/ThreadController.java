@@ -36,7 +36,9 @@ public class ThreadController extends MainController{
         int user_id = getUserService().getId(body.getUser());
         if (forum_id==0 || user_id == 0)
             return Result.invalidReques();
-        int id = getThreadService().createNotAutoId(
+        int id = //getThreadService().getNextId("thread");
+        getThreadService().createNotAutoId(
+               // id,
                 forum_id,
                 user_id,
                 body.getTitle(),

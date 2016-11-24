@@ -111,8 +111,8 @@ public class PostService extends MainService{
         return template.update(sql,id);
     }
 
-
-    public int createNotAutoId(Integer user,
+    public int createNotAutoId(
+                      Integer user,
                       String message,
                       Integer forum,
                       Integer thread,
@@ -123,9 +123,8 @@ public class PostService extends MainService{
                       Boolean isEdited,
                       Boolean isSpam,
                       Boolean isDeleted) {
-        template.update("UPDATE `LastId` SET `count` = `count` + 1 WHERE `table` = ?","post");
-        String sql = "SELECT `count` FROM `LastId` WHERE `table` = ?";
-        Integer id = template.queryForObject(sql,Integer.class,"post");
+        int id = getNextId("post");
+        String sql;
         String mpath ="";
         Integer root;
         boolean flagError = false;

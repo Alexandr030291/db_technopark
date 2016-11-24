@@ -11,12 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
 @Transactional
 public class UserService extends MainService{
 	private final JdbcTemplate template;
+	private HashMap<String,Integer> userMapId = new HashMap<>();
+	private HashMap<Integer,String> userMapEmail = new HashMap<>();
 
 	public UserService(JdbcTemplate template) {
 		super(template);
@@ -42,12 +45,29 @@ public class UserService extends MainService{
 		}
 	}
 
+	public void clearHash(){
+		userMapEmail = new HashMap<>();
+		userMapId = new HashMap<>();
+	}
+
 	public Integer getId(String email){
-		return template.queryForObject("SELECT `id` FROM `Users` WHERE `email` = ?;",Integer.class, email);
+		int id;
+		if (userMapId.containsKey(email)){
+			return userMapId.get(email);
+		}
+		id = template.queryForObject("SELECT `id` FROM `Users` WHERE `email` = ?;",Integer.class, email);
+		userMapId.put(email,id);
+		return id;
 	}
 
 	public String getEmail(int id){
-		return template.queryForObject("SELECT `email` FROM `Users` WHERE `id` = ?;",String.class, id);
+		String email;
+		if (userMapEmail.containsKey(id)){
+			return userMapEmail.get(id);
+		}
+		email = template.queryForObject("SELECT `email` FROM `Users` WHERE `id` = ?;",String.class, id);
+		userMapEmail.put(id,email);
+		return email;
 	}
 
 	public UserDetailAll profileAll(Integer id) {
@@ -119,18 +139,18 @@ public class UserService extends MainService{
 		String sql = 	"SELECT `id` " +
 						"FROM `Post` " +
 						"WHERE `user` = ? " +
-						"AND `date` >= '" + since + "' "+
+						"AND `date` >= ? "+
 						"ORDER BY `date` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
-		return template.queryForList(sql + sqlLimit, Integer.class, user_id);
+		return template.queryForList(sql + sqlLimit, Integer.class, user_id, since);
 	}
 
 	public List<Integer> getListThread(int id, String order, String since, Integer limit) {
 		String sql = "SELECT `Thread`.`id` FROM `Thread` " +
 					 "JOIN  `UserProfile` ON `Thread`.`user` = `UserProfile`.`id`" +
-					 "WHERE `UserProfile`.`id` = ? AND `Thread`.`date` >= '" + since +"' "+
+					 "WHERE `UserProfile`.`id` = ? AND `Thread`.`date` >= ? "+
 					 "ORDER BY `Thread`.`date` " + order;
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
-		return template.queryForList(sql + sqlLimit, Integer.class, id);
+		return template.queryForList(sql + sqlLimit, Integer.class, id, since);
 	}
 }

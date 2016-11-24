@@ -2,6 +2,7 @@ package org.ebitbucket.services;
 
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,12 +42,16 @@ public class ThreadService extends MainService{
     }
 
     public ThreadDetail detail(Integer id) {
-        String sql = "SELECT * FROM `Thread` WHERE `Thread`.`id` = ?;";
-        return template.queryForObject(sql, THREAD_DETAIL_ROW_MAPPER, id);
+        try {
+            String sql = "SELECT * FROM `Thread` WHERE `Thread`.`id` = ?;";
+            return template.queryForObject(sql, THREAD_DETAIL_ROW_MAPPER, id);
+        }catch (EmptyResultDataAccessException na){
+            return null;
+        }
     }
 
     public int getCountPost(Integer id){
-        String sql = "SELECT count(*) FROM `Post` WHERE `thread` = ? AND `isDeleted` = FALSE;";
+        String sql = "SELECT `posts` FROM `Thread` WHERE `id` = ?;";
         return template.queryForObject(sql, Integer.class, id);
     }
 
@@ -57,43 +62,38 @@ public class ThreadService extends MainService{
 
     public List<Integer> getListPost(Integer id, String since, String order, Integer limit){
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
-                    "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
-                    "WHERE `Thread`.`id` = ? AND `Post`.`date` >= '" + since + "' "+
+                    "WHERE `Post`.`thread` = ? " +
+                    "AND `Post`.`date` >= ? "+
                     "ORDER BY `Post`.`date` " + order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, Integer.class, id);
+        return template.queryForList(sql+sqlLimit, Integer.class, id, since);
 
     }
 
     public List<Integer> getListPostInTree(Integer id, String since,String order, Integer limit){
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
-                    "JOIN `Thread` ON `Post`.`thread` = `Thread`.`id`" +
-                    "WHERE `Thread`.`id` = ? AND `Post`.`date` >= '" + since + "' " +
+                    "WHERE `Post`.`thread` = ? " +
+                    "AND `Post`.`date` >= ? " +
                     "ORDER BY `Post`.`root` " + order + ", `Post`.`mpath` ASC";
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
-        return template.queryForList(sql+sqlLimit, Integer.class, id);
+        return template.queryForList(sql+sqlLimit, Integer.class, id, since);
     }
 
     public List<Integer> getListPostInParentTree(Integer thread, String since,String order, Integer limit){
         String LIMIT = (limit!=null&&limit!=0)?" LIMIT "+limit+" ":" ";
         String sql =   "SELECT `Post`.`id` FROM " +
                 "(" +
-                    "SELECT `Post`.`id` " +
-                    "FROM " +
-                    "(" +
-                        "SELECT `id` " +
-                        "FROM `Post` " +
-                        "WHERE `thread` = ? " +
-                        "AND `date` >= '" + since + "' " +
-                    ") p1 " +
-                    "JOIN `Post` ON p1.`id` = `Post`.`id`" +
-                    "ORDER BY `Post`.`parent` ASC ,`Post`.`id` "+order + LIMIT +
+                    "SELECT DISTINCT `Post`.`root` " +
+                    "FROM `Post` " +
+                    "WHERE `thread` = ? " +
+                    "AND `date` >= ? " +
+                    "ORDER BY `Post`.`root` "+order + LIMIT +
                 ") p2 "+
                 "JOIN `Post`" +
-                "ON  `Post`.`root` = p2 .`id` " +
-                "AND `Post`.`date` >= '"+ since +"' "+
+                "ON  `Post`.`root` = p2 .`root` " +
+                "AND `Post`.`date` >= ? " +
                 "ORDER BY `Post`.`root` "+order +", `mpath` ASC;";
-        return template.queryForList(sql, Integer.class, thread);
+        return template.queryForList(sql, Integer.class, thread,since,since);
     }
 
     public int vote(int id, String vote){
@@ -122,9 +122,9 @@ public class ThreadService extends MainService{
 
     public int restore(int id){
         String sql ="UPDATE `Post` SET `isDeleted` = FALSE WHERE `thread` = ?;";
-        if (template.update(sql,id)==0)
+        int posts = template.update(sql,id);
+        if (posts==0)
             return 0;
-        int posts = template.queryForObject("SELECT count(*) FROM `Post` WHERE `thread` = ?",Integer.class,id);
         sql = "UPDATE `Thread` SET `isDeleted` = FALSE, `posts` = ? WHERE `id` = ?;";
         return template.update(sql,posts,id);
     }
@@ -134,7 +134,8 @@ public class ThreadService extends MainService{
         return template.update(sql,message,slug,id);
     }
 
-    public int createNotAutoId(int forum,
+    public int createNotAutoId(
+                      int forum,
                       int user,
                       String title,
                       String message,
@@ -142,9 +143,8 @@ public class ThreadService extends MainService{
                       String date,
                       Boolean isClosed,
                       Boolean isDeleted) {
-        template.update("UPDATE `LastId` SET `count` = `count` + 1 WHERE `table` = ?","thread");
-        String sql = "SELECT `count` FROM `LastId` WHERE `table` = ?";
-        Integer id = template.queryForObject(sql,Integer.class,"thread");
+        String sql;
+        int id = getNextId("thread");
         sql = "INSERT INTO `Thread` (`id`,`forum`, `user`, `title`, `message`, `slug`, `date`, `isClosed`, `isDeleted`) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
         template.update(sql,id,forum,user,title,message,slug,date,isClosed,isDeleted);

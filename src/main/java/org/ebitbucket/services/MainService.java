@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 class MainService {
     final private JdbcTemplate template;
 
-
     MainService(JdbcTemplate template) {
         this.template = template;
     }
@@ -49,7 +48,7 @@ class MainService {
             return new HashMap<>();
         }
         String userListIN="("+ list.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
-        String sql = "SELECT DISTINCT `Users`.`id`, " +
+        String sql = "SELECT `Users`.`id`, " +
                 "`Users`.`email`, " +
                 "`UserProfile`.`name`, " +
                 "`UserProfile`.`username`, " +
@@ -70,6 +69,12 @@ class MainService {
         for (ListObject listSubscription : listSubscriptions)
             userDetailAllHashMap.get(listSubscription.getId()).addSubscriptions((Integer) listSubscription.getValue());
         return userDetailAllHashMap;
+    }
+
+    public int getNextId(String tableName){
+        template.update("UPDATE `LastId` SET `count` = `count` + 1 WHERE `table` = ?",tableName);
+        String sql = "SELECT `count` FROM `LastId` WHERE `table` = ?";
+        return template.queryForObject(sql,Integer.class,tableName);
     }
 
     public List<UserDetailAll> setFollowee(List<UserDetailAll> userList,String userListIN){
@@ -101,7 +106,7 @@ class MainService {
         if (list.size()==0){
             return new HashMap<>();
         }
-        String sql =   "SELECT DISTINCT `id`, `short_name` " +
+        String sql =   "SELECT `id`, `short_name` " +
                 "FROM `Forums` "+
                 "WHERE `id` IN ( " +
                 list.stream().map(String::valueOf).collect(Collectors.joining(", ")) +")";
@@ -116,7 +121,7 @@ class MainService {
         if (list.size()==0){
             return new HashMap<>();
         }
-        String sql =   "SELECT DISTINCT `ForumDetail`.`id`, " +
+        String sql =   "SELECT `ForumDetail`.`id`, " +
                 "`ForumDetail`.`name`, " +
                 "`Forums`.`short_name`, " +
                 "`Users`.`email` " +
@@ -140,7 +145,7 @@ class MainService {
         if (list.size()==0){
             return new HashMap<>();
         }
-        String sql =   "SELECT DISTINCT `Thread`.`id`, " +
+        String sql =   "SELECT `Thread`.`id`, " +
                 "`Forums`.`short_name`, " +
                 "`Users`.`email`, " +
                 "`Thread`.`title`," +

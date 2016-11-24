@@ -80,6 +80,10 @@ CREATE TABLE `Followers`
   UNIQUE(`follower`, `followee`)
 );
 
+create index `postForumAndData` on `Post`(`forum`,`date`);
+create index `postTreadAndData` on `Post`(`thread`,`date`);
+create index `postForumAndUser` on `Post`(`forum`,`user`);
+
 ALTER TABLE `UserProfile`
   ADD CONSTRAINT `fk_UserProfile_1`
 FOREIGN KEY (`id`)

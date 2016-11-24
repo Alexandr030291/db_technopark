@@ -93,6 +93,7 @@ final public class ForumController extends MainController{
         if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();
 
+        since = Functions.validSince(since);
         Integer forum_id = getForumService().getId(short_name);
         List<Integer> threadListId = getForumService().getListThreadId(forum_id,since,_order,limit);
         HashMap<Integer,ThreadDetail> threadDetailsMap = getForumService().getThreadDetailList(threadListId,related);
@@ -120,6 +121,7 @@ final public class ForumController extends MainController{
         if (!"desc".equalsIgnoreCase(_order) && !"asc".equalsIgnoreCase(_order))
             return Result.incorrectRequest();
 
+        since = Functions.validSince(since);
         Integer forum_id = getForumService().getId(short_name);
         List<Integer> postListId = getForumService().getListPost(forum_id,since,_order,limit);
         List<PostDetails> postDetailsList = new ArrayList<>();
