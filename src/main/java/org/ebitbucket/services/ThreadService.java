@@ -56,7 +56,7 @@ public class ThreadService extends MainService{
     }
 
     public int getCount(){
-        String sql = "SELECT count(*) FROM `Thread` WHERE `isDeleted` = FALSE;";
+        String sql = "SELECT  `count` FROM `LastId` WHERE `table` = 'table';";
         return template.queryForObject(sql, Integer.class);
     }
 

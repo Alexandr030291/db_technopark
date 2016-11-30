@@ -83,7 +83,7 @@ public class PostService extends MainService{
     }
 
     public int getCount(){
-        String sql = "SELECT count(*) FROM `Post` WHERE `isDeleted` = FALSE;";
+        String sql = "SELECT  `count` FROM `LastId` WHERE `table` = 'post';";
         return template.queryForObject(sql, Integer.class);
     }
 
