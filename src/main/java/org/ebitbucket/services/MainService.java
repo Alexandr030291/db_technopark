@@ -11,6 +11,7 @@ import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.User.User;
 import org.ebitbucket.model.User.UserDetailAll;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -115,6 +116,10 @@ class MainService {
         for (Forum aForumEmailList : forumEmailList)
             forumHashMap.put(aForumEmailList.getId(), aForumEmailList.getShort_name());
         return forumHashMap;
+    }
+
+    public void createUserForumKey(int user, int forum) {
+        template.update("INSERT IGNORE `UsersOfForum`(`user`,`forum`) VALUE (?,?);", user, forum);
     }
 
     HashMap<Integer,ForumDetail> getForumDetailsList(Set<Integer> list){

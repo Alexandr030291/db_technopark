@@ -18,8 +18,6 @@ import java.util.List;
 @Transactional
 public class UserService extends MainService{
 	private final JdbcTemplate template;
-	private HashMap<String,Integer> userMapId = new HashMap<>();
-	private HashMap<Integer,String> userMapEmail = new HashMap<>();
 
 	public UserService(JdbcTemplate template) {
 		super(template);
@@ -39,35 +37,19 @@ public class UserService extends MainService{
 					, keyHolder);
 			String sql = "INSERT INTO `UserProfile` (`id`,`username`, `name`, `about`, `isAnonymous`) VALUES (?, ?, ?, ?, ?);";
 			template.update(sql,keyHolder.getKey().intValue(), username, name, about, isAnonymous);
+            getNextId("user");
 			return keyHolder.getKey().intValue();
 		} catch (DuplicateKeyException dk) {
 			return -1;
 		}
 	}
 
-	public void clearHash(){
-		userMapEmail = new HashMap<>();
-		userMapId = new HashMap<>();
-	}
-
 	public Integer getId(String email){
-		int id;
-		if (userMapId.containsKey(email)){
-			return userMapId.get(email);
-		}
-		id = template.queryForObject("SELECT `id` FROM `Users` WHERE `email` = ?;",Integer.class, email);
-		userMapId.put(email,id);
-		return id;
+		return template.queryForObject("SELECT `id` FROM `Users` WHERE `email` = ?;",Integer.class, email);
 	}
 
 	public String getEmail(int id){
-		String email;
-		if (userMapEmail.containsKey(id)){
-			return userMapEmail.get(id);
-		}
-		email = template.queryForObject("SELECT `email` FROM `Users` WHERE `id` = ?;",String.class, id);
-		userMapEmail.put(id,email);
-		return email;
+		return template.queryForObject("SELECT `email` FROM `Users` WHERE `id` = ?;",String.class, id);
 	}
 
 	public UserDetailAll profileAll(Integer id) {
@@ -131,13 +113,13 @@ public class UserService extends MainService{
 
 
 	public int getCount() {
-		String sql = "SELECT count(*) FROM `Users`";
+		String sql = "SELECT  `count` FROM `LastId` WHERE `table` = 'user';";
 		return template.queryForObject(sql, Integer.class);
 	}
 
 	public List<Integer> getListPost(int user_id, String order, String since, Integer limit) {
 		String sql = 	"SELECT `id` " +
-						"FROM `Post` " +
+						"FROM `Post` "+
 						"WHERE `user` = ? " +
 						"AND `date` >= ? "+
 						"ORDER BY `date` " + order;

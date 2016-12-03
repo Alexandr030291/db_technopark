@@ -31,7 +31,22 @@ public class PostService extends MainService{
     }
 
     public PostDetails details(int id){
-        String sql="SELECT * FROM `Post` WHERE `id` = ?";
+        String sql="SELECT `Post`.`id`, " +
+                "`Post`.`forum`, " +
+                "`Post`.`user`, " +
+                "`Post`.`thread`, " +
+                "`Post`.`parent`, " +
+                "`Post`.`message`, " +
+                "`Post`.`date`, " +
+                "`Post`.`isApproved`, " +
+                "`Post`.`isDeleted`, " +
+                "`Post`.`isEdited`, " +
+                "`Post`.`isHighlighted`, " +
+                "`Post`.`isSpam`, " +
+                "`Post`.`dislikes`, " +
+                "`Post`.`likes` " +
+                " FROM `Post` " +
+                "WHERE `Post`.`id` = ?";
         return template.queryForObject(sql,POST_DETAIL_ROW_MAPPER,id);
     }
 
@@ -39,7 +54,23 @@ public class PostService extends MainService{
         if (list.size()==0){
             return new HashMap<>();
         }
-        String sql="SELECT * FROM `Post` WHERE `id` IN ( " + list.stream().map(String::valueOf).collect(Collectors.joining(",")) +")";
+        String sql= "SELECT `Post`.`id`, " +
+                    "`Post`.`forum`, " +
+                    "`Post`.`user`, " +
+                    "`Post`.`thread`, " +
+                    "`Post`.`parent`, " +
+                    "`Post`.`message`, " +
+                    "`Post`.`date`, " +
+                    "`Post`.`isApproved`, " +
+                    "`Post`.`isDeleted`, " +
+                    "`Post`.`isEdited`, " +
+                    "`Post`.`isHighlighted`, " +
+                    "`Post`.`isSpam`, " +
+                    "`Post`.`dislikes`, " +
+                    "`Post`.`likes` " +
+                    "FROM `Post` " +
+                    "WHERE `Post`.`id` IN ( " +
+                   list.stream().map(String::valueOf).collect(Collectors.joining(",")) +")";
         List<PostDetails> postDetailsList = template.query(sql,POST_DETAIL_ROW_MAPPER);
 
         HashMap<Integer,PostDetails> postDetailsHashMap = new HashMap<>();
@@ -113,8 +144,8 @@ public class PostService extends MainService{
 
     public int createNotAutoId(
                       Integer user,
-                      String message,
                       Integer forum,
+                      String message,
                       Integer thread,
                       Integer parent,
                       String date,
@@ -143,11 +174,11 @@ public class PostService extends MainService{
             root = id;
         }
         mpath+= intToCode(id);
-        sql =  "INSERT INTO `Post` (`id`,`user`, `message`, `forum`, `thread`, `parent`, " +
+        sql =  "INSERT INTO `Post` (`id`,`user`, `forum`,`message`, `thread`, `parent`, " +
                 "`date`, `isApproved`, `isHighlighted`, `isEdited`, `isSpam`, `isDeleted`, `mpath`, `root`) VALUES " +
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);";
 
-        template.update(sql,id, user, message, forum, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted, mpath, root);
+        template.update(sql,id, user,forum, message, thread, parent, date, isApproved, isHighlighted, isEdited, isSpam, isDeleted, mpath, root);
         if (flagError){
             out.print("from post = "+id+" not found parent = " + parent+"\n");
         }

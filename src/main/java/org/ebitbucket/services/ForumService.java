@@ -22,17 +22,10 @@ import java.util.stream.Collectors;
 @Transactional
 public class ForumService extends MainService{
     private final JdbcTemplate template;
-    private HashMap<String,Integer> forumIdMap = new HashMap<>();
-    private HashMap<Integer,String> forumSNameMap = new HashMap<>();
 
     public ForumService(JdbcTemplate template) {
         super(template);
         this.template = template;
-    }
-
-    public void clearHash(){
-        forumIdMap = new HashMap<>();
-        forumSNameMap = new HashMap<>();
     }
 
     public int create(String name, String short_name, Integer user_id) {
@@ -48,6 +41,7 @@ public class ForumService extends MainService{
                     , keyHolder);
             String sql = "INSERT INTO `ForumDetail`(`id`,`name`, `user`) VALUE(?,?,?);";
             template.update(sql, keyHolder.getKey().intValue(), name, user_id);
+            getNextId("forum");
             return keyHolder.getKey().intValue();
         } catch (DuplicateKeyException dk) {
             return -1;
@@ -56,26 +50,14 @@ public class ForumService extends MainService{
 
     public Integer getId(String short_name){
         try {
-            int id;
-            if (forumIdMap.containsKey(short_name)){
-                return forumIdMap.get(short_name);
-            }
-            id = template.queryForObject("SELECT `id` FROM `Forums` WHERE `short_name` = ?;",Integer.class, short_name);
-            forumIdMap.put(short_name,id);
-            return id;
+            return template.queryForObject("SELECT `id` FROM `Forums` WHERE `short_name` = ?;",Integer.class, short_name);
         } catch (EmptyResultDataAccessException na){
             return 0;
         }
     }
 
     public String getShortName(int id){
-        String short_name;
-        if (forumSNameMap.containsKey(id)){
-            return forumSNameMap.get(id);
-        }
-        short_name = template.queryForObject("SELECT `short_name` FROM `Forums` WHERE `id` = ?;",String.class, id);
-        forumSNameMap.put(id,short_name);
-        return short_name;
+        return template.queryForObject("SELECT `short_name` FROM `Forums` WHERE `id` = ?;",String.class, id);
     }
 
     public ForumDetail detail(Integer id){
@@ -87,24 +69,24 @@ public class ForumService extends MainService{
     }
 
     public int getCount(){
-        String sql = "SELECT count(*) FROM `Forums`";
+        String sql = "SELECT  `count` FROM `LastId` WHERE `table` = 'forum';";
         return template.queryForObject(sql, Integer.class);
     }
 
     public List<Integer> getListThreadId(int forum_id, String since, String order, Integer limit){
         String sql = "SELECT `Thread`.`id` FROM `Thread`  " +
-                     "JOIN `ForumDetail` ON `Thread`.`forum` = `ForumDetail`.`id`" +
-                     "AND `ForumDetail`.`id` = ? AND `Thread`.`date` >= ? " +
+                     "WHERE `Thread`.`forum` = ? " +
+                     "AND `Thread`.`date` >= ? " +
                      "ORDER BY `Thread`.`date` " + order;
         String sqlLimit=(limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, forum_id,since);
     }
 
     public List<Integer> getListPost(int forum_id, String since, String order, Integer limit){
-        String sql = "SELECT `Post`.`id` FROM `Post`  " +
-                     "WHERE `Post`.`forum` = ? " +
-                     "AND `Post`.`date` >= ? " +
-                     "ORDER BY `Post`.`date` " + order;
+        String sql = "SELECT `id` FROM `Post` " +
+                     "WHERE `forum` = ? " +
+                     "AND `date` >= ? " +
+                     "ORDER BY `date` " + order;
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
         return template.queryForList(sql+sqlLimit, Integer.class, forum_id, since);
 
@@ -151,43 +133,20 @@ public class ForumService extends MainService{
 
     public List<UserDetailAll> getListUser(int forum_id, int since, String order, Integer limit){
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+"":"";
-        String sql =    "SELECT `Users`.`id`, " +
-                        "`Users`.`email`, " +
-                        "`UserProfile`.`name`, " +
-                        "`UserProfile`.`username`, " +
-                        "`UserProfile`.`about`, " +
-                        "`UserProfile`.`isAnonymous` " +
-                        "FROM " +
-                        "(" +
-                            "SELECT DISTINCT `Post`.`user` "+
-                            "FROM `Post` " +
-                            "WHERE `Post`.`forum` = ? " +
-                            "AND `Post`.`user` >= ? " +
-                        ") U " +
-                        "JOIN `Users`"+
-                        "ON `Users`.`id` = `U`.`user`"+
+        String sql =    "SELECT `UsersOfForum`.`user` " +
+                        "FROM `UsersOfForum` " +
                         "JOIN `UserProfile` " +
-                        "ON `UserProfile`.`id` = `U`.`user`"+
-                        "ORDER BY `name` "+ order;
-        List<UserDetailAll> users = template.query(sql+sqlLimit, USER_DETAIL_ALL_ROW_MAPPER,forum_id,since);
-        if (users.size()>0) {
-            String userListId = "(";
-            for (UserDetailAll user : users) {
-                userListId += user.getId().toString() + ", ";
-            }
-            userListId += "0)";
-            users = setFollowee(users,userListId);
-            HashMap<Integer,UserDetailAll> userDetailAllHashMap = new HashMap<>();
-            for (UserDetailAll user1 : users) userDetailAllHashMap.put(user1.getId(), user1);
-
-
-            sql = "SELECT `user`, `thread`  " +
-                  "FROM `Subscriptions` " +
-                  "WHERE `user` IN " + userListId;
-            List<ListObject> listSubscriptions = template.query(sql, Subscriptions_ROWMAPPER);
-            for (ListObject listSubscription : listSubscriptions)
-                userDetailAllHashMap.get(listSubscription.getId()).addSubscriptions((Integer)listSubscription.getValue());
-        }
+                        "ON `UsersOfForum`.`user` = `UserProfile`.`id` " +
+                        "WHERE `UsersOfForum`.`forum` = ? " +
+                        "AND `UsersOfForum`.`user` >= ? " +
+                        "ORDER BY `UserProfile`.`name` "+
+                         order + sqlLimit;
+        List<Integer> user_id =  template.queryForList(sql,Integer.class,forum_id,since);
+        Set<Integer> userSetId = new HashSet<>();
+        for (Integer anUser_id : user_id) userSetId.add(anUser_id);
+        HashMap<Integer,UserDetailAll> userDetailAllHashMap = getUserDetailAllList(userSetId);
+        List<UserDetailAll> users = new ArrayList<>();
+        for (Integer anUser_id : user_id) users.add(userDetailAllHashMap.get(anUser_id));
         return users;
     }
 }

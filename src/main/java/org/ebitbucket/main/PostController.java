@@ -35,11 +35,12 @@ public class PostController extends MainController{
         if (forum_id==0 || user_id == 0)
             return Result.invalidReques();
 
+        getPostService().createUserForumKey(user_id,forum_id);
         int id = //getPostService().getNextId("post");
         getPostService().createNotAutoId(
                 user_id,
-                body.getMessage(),
                 forum_id,
+                body.getMessage(),
                 body.getThread(),
                 body.getParent(),
                 body.getDate(),

@@ -26,6 +26,13 @@ CREATE TABLE `Forums`
   `short_name` VARCHAR(50) NOT NULL UNIQUE KEY
 );
 
+CREATE TABLE `UsersOfForum`
+(
+  `user` INT NOT NULL,
+  `forum` INT NOT NULL,
+  UNIQUE (`user`,`forum`)
+);
+
 CREATE TABLE `Post`
 (
   `id` INT NOT NULL PRIMARY KEY UNIQUE KEY ,
@@ -33,7 +40,7 @@ CREATE TABLE `Post`
   `user` INT NOT NULL,
   `thread` INT NOT NULL ,
   `message` TEXT NOT NULL ,
-  `date` DATETIME NOT NULL,
+  `date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   `parent` INT NULL DEFAULT NULL ,
   `isApproved` BOOLEAN NOT NULL DEFAULT FALSE ,
@@ -56,7 +63,7 @@ CREATE TABLE `Thread`
   `title` VARCHAR(50) NOT NULL ,
   `message` TEXT NOT NULL ,
   `slug` VARCHAR(50) NOT NULL ,
-  `date` DATETIME NOT NULL,
+  `date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   `isClosed` BOOLEAN NOT NULL DEFAULT FALSE ,
   `isDeleted` BOOLEAN NOT NULL DEFAULT FALSE ,
@@ -80,9 +87,13 @@ CREATE TABLE `Followers`
   UNIQUE(`follower`, `followee`)
 );
 
-create index `postForumAndData` on `Post`(`forum`,`date`);
-create index `postTreadAndData` on `Post`(`thread`,`date`);
-create index `postForumAndUser` on `Post`(`forum`,`user`);
+
+create index `postDataAndForum` on `Post`(`date`,`forum`);
+create index `postRootAndTreadAndData` on `Post`(`root`,`thread`,`date`);
+CREATE INDEX `postTreadAndData` ON Post (`date`,`thread`);
+create index `userIdAndName` on `UserProfile`(`name`);
+create index `threadDateAndForum` on `Thread`(`date`,`forum`);
+CREATE INDEX `usersForum` ON UsersOfForum(`user`,`forum`);
 
 ALTER TABLE `UserProfile`
   ADD CONSTRAINT `fk_UserProfile_1`
@@ -101,6 +112,18 @@ ALTER TABLE `ForumDetail`
   FOREIGN KEY (`user`)
   REFERENCES `Users` (`id`)
   ON DELETE CASCADE;
+
+ALTER TABLE `UsersOfForum`
+    ADD CONSTRAINT `fk_UsersOfForum_1`
+FOREIGN KEY (`user`)
+  REFERENCES `Users` (`id`)
+ON DELETE CASCADE ;
+
+ALTER TABLE `UsersOfForum`
+  ADD CONSTRAINT `fk_UsersOfForum_2`
+FOREIGN KEY (`forum`)
+REFERENCES `Forums` (`id`)
+  ON DELETE CASCADE ;
 
 ALTER TABLE `Post`
   ADD constraint `fk_Post_1`

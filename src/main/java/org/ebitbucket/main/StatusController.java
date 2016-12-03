@@ -15,8 +15,6 @@ public class StatusController extends MainController{
     @RequestMapping(path = "db/api/clear", method = RequestMethod.POST)
     public Result clear() {
         getControlService().allClear();
-        getUserService().clearHash();
-        getForumService().clearHash();
         return Result.ok();
     }
 
