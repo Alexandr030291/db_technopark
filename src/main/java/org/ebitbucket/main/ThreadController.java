@@ -1,6 +1,7 @@
 package org.ebitbucket.main;
 
 import org.ebitbucket.lib.Functions;
+import org.ebitbucket.lib.Util;
 import org.ebitbucket.model.MessageUpdate;
 import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Subscription;
@@ -188,7 +189,7 @@ public class ThreadController extends MainController{
         if (!Functions.correctId(thread))
             return Result.notFound();
 
-        since = Functions.validSince(since);
+        since = Util.validSince(since);
         String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
         if (    !"desc".equalsIgnoreCase(_order) &&
                 !"asc".equalsIgnoreCase(_order)||

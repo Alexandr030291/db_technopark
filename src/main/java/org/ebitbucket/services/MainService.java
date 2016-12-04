@@ -1,6 +1,7 @@
 package org.ebitbucket.services;
 
 
+import org.ebitbucket.lib.Util;
 import org.ebitbucket.lib.Functions;
 import org.ebitbucket.model.FollowerTable;
 import org.ebitbucket.model.Forum.Forum;
@@ -11,7 +12,6 @@ import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.User.User;
 import org.ebitbucket.model.User.UserDetailAll;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -273,20 +273,20 @@ class MainService {
             rs.getString("title"),
             rs.getString("message"),
             rs.getString("slug"),
-            Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
+            Util.dateToStr(rs.getTimestamp("date").toLocalDateTime()),
             rs.getBoolean("isClosed"),
             rs.getBoolean("isDeleted"),
             rs.getInt("likes"),
             rs.getInt("dislikes"),
             rs.getInt("posts"));
 
-    final RowMapper<ThreadDetail> THREAD_DETAIL_SHORT_ROW_MAPPER = (rs, rowNum) -> new ThreadDetail(rs.getInt("id"),
+    private final RowMapper<ThreadDetail> THREAD_DETAIL_SHORT_ROW_MAPPER = (rs, rowNum) -> new ThreadDetail(rs.getInt("id"),
             rs.getString("short_name"),
             rs.getString("email"),
             rs.getString("title"),
             rs.getString("message"),
             rs.getString("slug"),
-            Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
+            Util.dateToStr(rs.getTimestamp("date").toLocalDateTime()),
             rs.getBoolean("isClosed"),
             rs.getBoolean("isDeleted"),
             rs.getInt("likes"),
@@ -301,7 +301,7 @@ class MainService {
                 rs.getInt("thread"),
                 (rs.getString("parent")!=null)?rs.getInt("parent"):null,
                 rs.getString("message"),
-                Functions.DATE_FORMAT.format(rs.getTimestamp("date")),
+                Util.dateToStr(rs.getTimestamp("date").toLocalDateTime()),
                 rs.getBoolean("isApproved"),
                 rs.getBoolean("isDeleted"),
                 rs.getBoolean("isEdited"),

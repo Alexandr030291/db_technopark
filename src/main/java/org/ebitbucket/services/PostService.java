@@ -5,15 +5,9 @@ import org.ebitbucket.model.Post.PostDetails;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.JDBCType;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 

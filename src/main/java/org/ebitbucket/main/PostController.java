@@ -1,6 +1,7 @@
 package org.ebitbucket.main;
 
 import org.ebitbucket.lib.Functions;
+import org.ebitbucket.lib.Util;
 import org.ebitbucket.model.MessageUpdate;
 import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Post.PostRequest;
@@ -77,7 +78,7 @@ public class PostController extends MainController{
                             @RequestParam(name = "limit", required = false) Integer limit,
                             @RequestParam(name = "order", required = false) String order,
                             @RequestParam(name = "since", required = false) String since) {
-        since = Functions.validSince(since);
+        since = Util.validSince(since);
         if (StringUtils.isEmpty(short_name)==(thread==null)|| StringUtils.isEmpty(since)) {
             return Result.invalidReques();
         }

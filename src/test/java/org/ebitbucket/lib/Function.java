@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.ebitbucket.lib.Functions.DATE_FORMAT;
-
-
 public class Function {
     private final static Random random = new Random();
 
@@ -60,7 +57,7 @@ public class Function {
                     "title" + i,
                     "message" + i,
                     "slug" + i ,
-                    DATE_FORMAT.format(random.nextInt()),
+                    Util.dateToStr(Util.strToDate(String.valueOf(random.nextInt()))),
                     false,
                     false
                     )
@@ -83,7 +80,7 @@ public class Function {
             if (parent==0) parent = null;
             postRequests.add(i, new PostRequest(
                             i,
-                            DATE_FORMAT.format(random.nextInt()),
+                            Util.dateToStr(Util.strToDate(String.valueOf(random.nextInt()))),
                             forumRequestList.get(forumid).getShort_name(),
                             false,
                             false,

@@ -1,8 +1,6 @@
 package org.ebitbucket.services;
 
 import org.ebitbucket.model.Forum.ForumDetail;
-import org.ebitbucket.model.ListObject;
-import org.ebitbucket.model.Post.PostDetails;
 import org.ebitbucket.model.Tread.ThreadDetail;
 import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.dao.DuplicateKeyException;
