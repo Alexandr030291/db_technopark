@@ -20,9 +20,8 @@ public final class Util {
     public static String validSince(String since) {
         if (since == null) {
             since = DATE_FORMAT.format(LocalDateTime.MIN);
-        } else {
-            DATE_FORMAT.parse(since);
         }
+        DATE_FORMAT.parse(since);
         return since;
     }
 
