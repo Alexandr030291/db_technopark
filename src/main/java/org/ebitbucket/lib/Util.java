@@ -19,10 +19,9 @@ public final class Util {
 
     public static String validSince(String since) {
         if (since == null) {
-            since = "1000-01-01 00:00:00";
-        }else {
-            DATE_FORMAT.parse(since);
+           return null;
         }
+        DATE_FORMAT.parse(since);
         return since;
     }
 

@@ -61,6 +61,13 @@ public class ThreadService extends MainService{
     }
 
     public List<Integer> getListPost(Integer id, String since, String order, Integer limit){
+        if (since==null){
+            String sql ="SELECT `Post`.`id` FROM `Post`  " +
+                    "WHERE `Post`.`thread` = ? " +
+                    "ORDER BY `Post`.`date` " + order;
+            String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
+            return template.queryForList(sql+sqlLimit, Integer.class, id);
+        }
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "WHERE `Post`.`thread` = ? " +
                     "AND `Post`.`date` >= ? "+
@@ -71,6 +78,13 @@ public class ThreadService extends MainService{
     }
 
     public List<Integer> getListPostInTree(Integer id, String since,String order, Integer limit){
+        if (since==null){
+            String sql ="SELECT `Post`.`id` FROM `Post`  " +
+                    "WHERE `Post`.`thread` = ? " +
+                    "ORDER BY `Post`.`root` " + order + ", `Post`.`mpath` ASC";
+            String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
+            return template.queryForList(sql+sqlLimit, Integer.class, id);
+        }
         String sql ="SELECT `Post`.`id` FROM `Post`  " +
                     "WHERE `Post`.`thread` = ? " +
                     "AND `Post`.`date` >= ? " +
@@ -80,6 +94,21 @@ public class ThreadService extends MainService{
     }
 
     public List<Integer> getListPostInParentTree(Integer thread, String since,String order, Integer limit){
+        if (since==null){
+            String LIMIT = (limit!=null&&limit!=0)?" LIMIT "+limit+" ":" ";
+            String sql =   "SELECT `Post`.`id` FROM " +
+                    "(" +
+                    "SELECT DISTINCT `Post`.`root` " +
+                    "FROM `Post` " +
+                    "WHERE `thread` = ? " +
+                    "ORDER BY `Post`.`root` "+order + LIMIT +
+                    ") p2 "+
+                    "JOIN `Post`" +
+                    "ON  `Post`.`root` = p2 .`root` " +
+                    "ORDER BY `Post`.`root` "+order +", `mpath` ASC;";
+            return template.queryForList(sql, Integer.class, thread);
+        }
+
         String LIMIT = (limit!=null&&limit!=0)?" LIMIT "+limit+" ":" ";
         String sql =   "SELECT `Post`.`id` FROM " +
                 "(" +

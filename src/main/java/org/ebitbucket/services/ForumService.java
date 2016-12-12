@@ -72,6 +72,13 @@ public class ForumService extends MainService{
     }
 
     public List<Integer> getListThreadId(int forum_id, String since, String order, Integer limit){
+        if (since==null){
+            String sql = "SELECT `Thread`.`id` FROM `Thread`  " +
+                    "WHERE `Thread`.`forum` = ? " +
+                    "ORDER BY `Thread`.`date` " + order;
+            String sqlLimit=(limit!=null&&limit!=0)?" LIMIT "+limit+";":";";
+            return template.queryForList(sql+sqlLimit, Integer.class, forum_id);
+        }
         String sql = "SELECT `Thread`.`id` FROM `Thread`  " +
                      "WHERE `Thread`.`forum` = ? " +
                      "AND `Thread`.`date` >= ? " +
@@ -81,6 +88,13 @@ public class ForumService extends MainService{
     }
 
     public List<Integer> getListPost(int forum_id, String since, String order, Integer limit){
+        if (since==null){
+            String sql = "SELECT `id` FROM `Post` " +
+                    "WHERE `forum` = ? " +
+                    "ORDER BY `date` " + order;
+            String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+";":";";
+            return template.queryForList(sql+sqlLimit, Integer.class, forum_id);
+        }
         String sql = "SELECT `id` FROM `Post` " +
                      "WHERE `forum` = ? " +
                      "AND `date` >= ? " +

@@ -193,8 +193,7 @@ public class ThreadController extends MainController{
         String _order = (StringUtils.isEmpty(order)) ? "desc" : order;
         if (    !"desc".equalsIgnoreCase(_order) &&
                 !"asc".equalsIgnoreCase(_order)||
-                (limit != null && limit < 0) ||
-                StringUtils.isEmpty(since)){
+                (limit != null && limit < 0)){
             return Result.incorrectRequest();
         }
         List<Integer> postListId = new ArrayList<>();
