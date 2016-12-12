@@ -99,7 +99,7 @@ public class ThreadController extends MainController{
                               @RequestParam(name = "limit", required = false) Integer limit,
                               @RequestParam(name = "order", required = false) String order,
                               @RequestParam(name = "since", required = false) String since) {
-        if (StringUtils.isEmpty(short_name)==StringUtils.isEmpty(email)|| (limit != null && limit < 0) || StringUtils.isEmpty(since)) {
+        if (StringUtils.isEmpty(short_name)==StringUtils.isEmpty(email)|| (limit != null && limit < 0)) {
             return Result.invalidReques();
         }
 

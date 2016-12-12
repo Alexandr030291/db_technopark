@@ -129,7 +129,7 @@ final public class UserController extends MainController{
                               @RequestParam(name = "limit", required = false) Integer limit,
                               @RequestParam(name = "order", required = false) String order,
                               @RequestParam(name = "since", required = false) String since) {
-        if (StringUtils.isEmpty(email) || (limit != null && limit < 0)||StringUtils.isEmpty(since)) {
+        if (StringUtils.isEmpty(email) || (limit != null && limit < 0)) {
             return Result.incorrectRequest();
         }
         String _order=(StringUtils.isEmpty(order))?"desc":order;

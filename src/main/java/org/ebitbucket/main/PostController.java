@@ -79,7 +79,7 @@ public class PostController extends MainController{
                             @RequestParam(name = "order", required = false) String order,
                             @RequestParam(name = "since", required = false) String since) {
         since = Util.validSince(since);
-        if (StringUtils.isEmpty(short_name)==(thread==null)|| StringUtils.isEmpty(since)) {
+        if (StringUtils.isEmpty(short_name)==(thread==null)) {
             return Result.invalidReques();
         }
         order = (StringUtils.isEmpty(order)) ? "desc" : order;
