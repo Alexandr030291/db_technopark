@@ -139,7 +139,7 @@ public class UserService extends MainService{
 			String sql = "SELECT `Thread`.`id` FROM `Thread` " +
 					"JOIN  `UserProfile` " +
 					"ON `Thread`.`user` = `UserProfile`.`id`" +
-					"WHERE `UserProfile`.`id`"+
+					"WHERE `UserProfile`.`id` = ? "+
 					"ORDER BY `Thread`.`date` " + order;
 			String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 			return template.queryForList(sql + sqlLimit, Integer.class, id);
