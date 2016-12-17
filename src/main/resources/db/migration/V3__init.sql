@@ -1,5 +1,3 @@
-ALTER TABLE `Post` engine = MyISAM;
-
 ALTER TABLE `UserProfile`
   ADD CONSTRAINT `fk_UserProfile_1`
 FOREIGN KEY (`id`)

@@ -19,7 +19,8 @@ public final class Util {
 
     public static String validSince(String since) {
         if (since == null) {
-           return null;
+       //     return  "1000-01-01 00:00:00";
+            return null;
         }
         DATE_FORMAT.parse(since);
         if (since.equals("1000-01-01 00:00:00")) {//на минимальное значение проще на этап этапе искючить чтобы в запросах исключить на выполняемое условие

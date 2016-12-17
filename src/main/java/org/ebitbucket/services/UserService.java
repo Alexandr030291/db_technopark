@@ -151,4 +151,12 @@ public class UserService extends MainService{
 		String sqlLimit = (limit != null&&limit!=0) ? " LIMIT " + limit + ";" : ";";
 		return template.queryForList(sql + sqlLimit, Integer.class, id, since);
 	}
+
+	public String getUserName(int id){
+		List<String> list= template.queryForList("SELECT `name` FROM `UserProfile` WHERE `id` = ?",String.class,id);
+		if (list.size()==0)
+			return null;
+		return list.get(0);
+
+	}
 }

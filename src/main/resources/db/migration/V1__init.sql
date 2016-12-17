@@ -30,6 +30,7 @@ CREATE TABLE `UsersOfForum`
 (
   `user` INT NOT NULL,
   `forum` INT NOT NULL,
+  `user_name` VARCHAR(50),
   UNIQUE (`user`,`forum`)
 );
 
@@ -87,11 +88,10 @@ CREATE TABLE `Followers`
   UNIQUE(`follower`, `followee`)
 );
 
+ALTER TABLE `Post` engine = MyISAM;
 
-create index `postDataAndForum` on `Post`(`date`,`forum`);
-create index `postRootAndTreadAndData` on `Post`(`root`,`thread`,`date`);
-CREATE INDEX `postTreadAndData` ON Post (`date`,`thread`);
-create index `userIdAndName` on `UserProfile`(`name`);
-create index `threadDateAndForum` on `Thread`(`date`,`forum`);
-CREATE INDEX `usersForum` ON UsersOfForum(`user`,`forum`);
-
+CREATE INDEX `usersForum` ON UsersOfForum(`forum`,`user`,`user_name`);
+CREATE INDEX `postUserAndData` ON `Post`(`user`,`date`);
+create index `postRootAndTreadAndData` on `Post`(`thread`,`date`,`root`);
+CREATE INDEX `postForumAndDate` ON `Post`(`forum`,`date`);
+CREATE INDEX `threadForumAndDate` ON `Thread`(`forum`,`date`);
