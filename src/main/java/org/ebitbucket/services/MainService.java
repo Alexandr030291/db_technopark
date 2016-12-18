@@ -118,8 +118,8 @@ class MainService {
         return forumHashMap;
     }
 
-    public void createUserForumKey(int user, int forum, String user_name) {
-        template.update("INSERT IGNORE `UsersOfForum`(`user`,`forum`,`user_name`) VALUE (?,?,?);", user, forum,user_name);
+    public void createUserForumKey(int user, int forum) {
+        template.update("INSERT IGNORE `UsersOfForum`(`user`,`forum`) VALUE (?,?);", user,forum);
     }
 
     HashMap<Integer,ForumDetail> getForumDetailsList(Set<Integer> list){

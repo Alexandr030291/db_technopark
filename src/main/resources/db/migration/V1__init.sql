@@ -29,9 +29,7 @@ CREATE TABLE `Forums`
 CREATE TABLE `UsersOfForum`
 (
   `user` INT NOT NULL,
-  `forum` INT NOT NULL,
-  `user_name` VARCHAR(50),
-  UNIQUE (`user`,`forum`,`user_name`)
+  `forum` INT NOT NULL
 );
 
 CREATE TABLE `Post`
@@ -100,7 +98,8 @@ INSERT INTO `LastId` (`table`, `count`) VALUES ('user', '0');
 
 ALTER TABLE `Post` engine = MyISAM;
 
-CREATE INDEX `usersForum` ON UsersOfForum(`forum`,`user`,`user_name`);
+CREATE UNIQUE INDEX `uf` ON `UsersOfForum`(`forum`,`user`);
+CREATE INDEX `un` ON `UserProfile`(`name`);
 CREATE INDEX `postUserAndData` ON `Post`(`user`,`date`);
 create index `postRootAndTreadAndData` on `Post`(`thread`,`date`,`root`);
 CREATE INDEX `postForumAndDate` ON `Post`(`forum`,`date`);

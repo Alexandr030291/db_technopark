@@ -147,18 +147,24 @@ public class ForumService extends MainService{
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+"":"";
         List<Integer> user_id;
         if (since==0){
-            String sql =    "SELECT `user` " +
+            String sql =
+                    "SELECT `UsersOfForum`.`user` " +
                     "FROM `UsersOfForum` " +
-                    "WHERE `forum` = ? " +
-                    "ORDER BY `user_name` "+
+                    "JOIN `UserProfile` " +
+                    "ON `UsersOfForum`.`user` = `UserProfile`.`id` " +
+                    "WHERE `UsersOfForum`.`forum` = ? " +
+                    "ORDER BY `UserProfile`.`name` "+
                     order + sqlLimit;
             user_id =  template.queryForList(sql,Integer.class,forum_id);
         }else {
-            String sql = "SELECT `user` " +
+            String sql =
+                    "SELECT `UsersOfForum`.`user` " +
                     "FROM `UsersOfForum` " +
-                    "WHERE `forum` = ? " +
-                    "AND `user` >= ? " +
-                    "ORDER BY `user_name` " +
+                    "JOIN `UserProfile` " +
+                    "ON `UsersOfForum`.`user` = `UserProfile`.`id` " +
+                    "WHERE `UsersOfForum`.`forum` = ? " +
+                    "AND `UsersOfForum`.`user` >= ? " +
+                    "ORDER BY `UserProfile`.`name` "+
                     order + sqlLimit;
             user_id = template.queryForList(sql, Integer.class, forum_id, since);
         }
