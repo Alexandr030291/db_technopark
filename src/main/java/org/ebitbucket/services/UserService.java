@@ -85,6 +85,7 @@ public class UserService extends MainService{
 	}
 
 	public int updateProfile(Integer id, String name, String about) {
+        template.update("UPDATE `UsersOfForum` SET `user_name` = ? WHERE `user` = ?",name,id);
 		String sql = "UPDATE `UserProfile` SET `about` = ?, `name` = ? WHERE `id` = ?;";
 		return template.update(sql, about, name, id);
 	}

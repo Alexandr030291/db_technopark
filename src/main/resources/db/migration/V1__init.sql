@@ -31,7 +31,7 @@ CREATE TABLE `UsersOfForum`
   `user` INT NOT NULL,
   `forum` INT NOT NULL,
   `user_name` VARCHAR(50),
-  UNIQUE (`user`,`forum`)
+  UNIQUE (`user`,`forum`,`user_name`)
 );
 
 CREATE TABLE `Post`
@@ -87,6 +87,16 @@ CREATE TABLE `Followers`
   `followee` INT NOT NULL,
   UNIQUE(`follower`, `followee`)
 );
+
+CREATE TABLE `LastId`
+(
+  `table` VARCHAR(50) NOT NULL UNIQUE KEY ,
+  `count` INT NOT NULL DEFAULT 0
+);
+INSERT INTO `LastId` (`table`, `count`) VALUES ('thread', '0');
+INSERT INTO `LastId` (`table`, `count`) VALUES ('post', '0');
+INSERT INTO `LastId` (`table`, `count`) VALUES ('forum', '0');
+INSERT INTO `LastId` (`table`, `count`) VALUES ('user', '0');
 
 ALTER TABLE `Post` engine = MyISAM;
 

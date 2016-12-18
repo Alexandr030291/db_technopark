@@ -145,15 +145,23 @@ public class ForumService extends MainService{
 
     public List<UserDetailAll> getListUser(int forum_id, int since, String order, Integer limit){
         String sqlLimit=(limit!=null&&limit>0)?" LIMIT "+limit+"":"";
-        String sql =    "SELECT `UsersOfForum`.`user` " +
-                        "FROM `UsersOfForum` " +
-                        "JOIN `UserProfile` " +
-                        "ON `UsersOfForum`.`user` = `UserProfile`.`id` " +
-                        "WHERE `UsersOfForum`.`forum` = ? " +
-                        "AND `UsersOfForum`.`user` >= ? " +
-                        "ORDER BY `UserProfile`.`name` "+
-                         order + sqlLimit;
-        List<Integer> user_id =  template.queryForList(sql,Integer.class,forum_id,since);
+        List<Integer> user_id;
+        if (since==0){
+            String sql =    "SELECT `user` " +
+                    "FROM `UsersOfForum` " +
+                    "WHERE `forum` = ? " +
+                    "ORDER BY `user_name` "+
+                    order + sqlLimit;
+            user_id =  template.queryForList(sql,Integer.class,forum_id);
+        }else {
+            String sql = "SELECT `user` " +
+                    "FROM `UsersOfForum` " +
+                    "WHERE `forum` = ? " +
+                    "AND `user` >= ? " +
+                    "ORDER BY `user_name` " +
+                    order + sqlLimit;
+            user_id = template.queryForList(sql, Integer.class, forum_id, since);
+        }
         Set<Integer> userSetId = new HashSet<>();
         for (Integer anUser_id : user_id) userSetId.add(anUser_id);
         HashMap<Integer,UserDetailAll> userDetailAllHashMap = getUserDetailAllList(userSetId);
