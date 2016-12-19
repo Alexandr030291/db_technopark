@@ -3,6 +3,7 @@ package org.ebitbucket.services;
 
 import org.ebitbucket.model.User.UserDetailAll;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -44,7 +45,11 @@ public class UserService extends MainService{
 	}
 
 	public Integer getId(String email){
-		return template.queryForObject("SELECT `id` FROM `Users` WHERE `email` = ?;",Integer.class, email);
+		try {
+			return template.queryForObject("SELECT `id` FROM `Users` WHERE `email` = ?;",Integer.class, email);
+		}catch (EmptyResultDataAccessException na){
+			return 0;
+		}
 	}
 
 	public String getEmail(int id){
@@ -52,23 +57,26 @@ public class UserService extends MainService{
 	}
 
 	public UserDetailAll profileAll(Integer id) {
-		String sql = "SELECT * FROM `UserProfile` " +
-					 "JOIN `Users` ON `UserProfile`.`id`=`Users`.`id` " +
-					 "WHERE `Users`.`id` = ?;";
-		UserDetailAll User = template.queryForObject(sql, USER_DETAIL_ALL_ROW_MAPPER, id);
-		sql = "SELECT `email` FROM `Users`" +
-		      "JOIN `Followers`  ON `Followers`.`followee` = `Users`.`id` " +
-			  "WHERE `follower` = ?;";
-		User.setFollowing(template.queryForList(sql, String.class, id));
-		sql = "SELECT `email` FROM `Users`" +
-			  "JOIN `Followers`  ON `Followers`.`follower` = `Users`.`id` " +
-			  "WHERE `followee` = ?;";
-		User.setFollowers(template.queryForList(sql, String.class, id));
-		sql = "SELECT `thread` FROM `Subscriptions` WHERE `Subscriptions`.`user`=?";
-		User.setSubscriptions(template.queryForList(sql, Integer.class, id));
-		return User;
+		try {
+			String sql = "SELECT * FROM `UserProfile` " +
+					"JOIN `Users` ON `UserProfile`.`id`=`Users`.`id` " +
+					"WHERE `Users`.`id` = ?;";
+			UserDetailAll User = template.queryForObject(sql, USER_DETAIL_ALL_ROW_MAPPER, id);
+			sql = "SELECT `email` FROM `Users`" +
+					"JOIN `Followers`  ON `Followers`.`followee` = `Users`.`id` " +
+					"WHERE `follower` = ?;";
+			User.setFollowing(template.queryForList(sql, String.class, id));
+			sql = "SELECT `email` FROM `Users`" +
+					"JOIN `Followers`  ON `Followers`.`follower` = `Users`.`id` " +
+					"WHERE `followee` = ?;";
+			User.setFollowers(template.queryForList(sql, String.class, id));
+			sql = "SELECT `thread` FROM `Subscriptions` WHERE `Subscriptions`.`user`=?";
+			User.setSubscriptions(template.queryForList(sql, Integer.class, id));
+			return User;
+		} catch (EmptyResultDataAccessException na) {
+			return null;
+		}
 	}
-
 	public int addFollowers(int follower, int followee) {
 		try {
 			String sql = "INSERT INTO `Followers`(`follower`, `followee`) VALUE (?,?);";

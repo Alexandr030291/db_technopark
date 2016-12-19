@@ -30,8 +30,8 @@ final public class UserController extends MainController{
 
     @RequestMapping(path = "db/api/user/details", method = RequestMethod.GET)
     public Result userDetails(@RequestParam(name = "user") String email) {
-        Integer user_id = getUserService().getId(email);
-        if (user_id == null)
+        int user_id = getUserService().getId(email);
+        if (user_id == 0)
             return Result.notFound();
         return Result.ok(getUserService().profileAll(user_id));
     }
@@ -52,7 +52,7 @@ final public class UserController extends MainController{
     public Result userUnFollow(@RequestBody FollowerRequest body) {
         int userFollower_id = getUserService().getId(body.getFollower());
         UserDetailAll userDetail = getUserService().profileAll(userFollower_id);
-        if (StringUtils.isEmpty(userDetail.getEmail()))
+        if (userDetail==null)
             return Result.notFound();
         int userFollowee_id = getUserService().getId(body.getFollowee());
         if(getUserService().delFollowers(userFollower_id, userFollowee_id)==0)
