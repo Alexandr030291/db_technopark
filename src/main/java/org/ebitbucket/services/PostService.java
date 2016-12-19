@@ -41,7 +41,10 @@ public class PostService extends MainService{
                 "`Post`.`likes` " +
                 " FROM `Post` " +
                 "WHERE `Post`.`id` = ?";
-        return template.queryForObject(sql,POST_DETAIL_ROW_MAPPER,id);
+        List<PostDetails> list = template.query(sql,POST_DETAIL_ROW_MAPPER,id);
+        if (list.size()==0)
+            return null;
+        return list.get(0);
     }
 
     public HashMap<Integer,PostDetails> listPost(List<Integer> list, String[] related){
