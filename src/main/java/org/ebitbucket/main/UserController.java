@@ -40,7 +40,7 @@ final public class UserController extends MainController{
     public Result userFollow(@RequestBody FollowerRequest body) {
         int userFollower_id = getUserService().getId(body.getFollower());
         UserDetailAll userDetail = getUserService().profileAll(userFollower_id );
-        if (StringUtils.isEmpty(userDetail.getEmail()))
+        if (userDetail==null)
             return Result.notFound();
         int userFollowee_id = getUserService().getId(body.getFollowee());
         getUserService().addFollowers(userFollower_id, userFollowee_id);
