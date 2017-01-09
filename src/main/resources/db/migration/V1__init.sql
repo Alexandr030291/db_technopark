@@ -105,7 +105,6 @@ ALTER TABLE `Followers` engine = MyISAM;
 ALTER TABLE `Post` engine = MyISAM;
 ALTER TABLE `Subscriptions` engine = MyISAM;
 ALTER TABLE `Thread` engine = MyISAM;
-ALTER TABLE `LastId` engine = MyISAM;
 
 CREATE UNIQUE INDEX `uf` ON `UsersOfForum`(`forum`,`user`);
 CREATE INDEX `un` ON `UserProfile`(`name`);
