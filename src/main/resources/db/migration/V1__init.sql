@@ -96,7 +96,16 @@ INSERT INTO `LastId` (`table`, `count`) VALUES ('post', '0');
 INSERT INTO `LastId` (`table`, `count`) VALUES ('forum', '0');
 INSERT INTO `LastId` (`table`, `count`) VALUES ('user', '0');
 
+ALTER TABLE `Users` engine = MyISAM;
+ALTER TABLE `UserProfile` engine = MyISAM;
+ALTER TABLE `UsersOfForum` engine = MyISAM;
+ALTER TABLE `Forums` engine = MyISAM;
+ALTER TABLE `ForumDetail` engine = MyISAM;
+ALTER TABLE `Followers` engine = MyISAM;
 ALTER TABLE `Post` engine = MyISAM;
+ALTER TABLE `Subscriptions` engine = MyISAM;
+ALTER TABLE `Thread` engine = MyISAM;
+ALTER TABLE `LastId` engine = MyISAM;
 
 CREATE UNIQUE INDEX `uf` ON `UsersOfForum`(`forum`,`user`);
 CREATE INDEX `un` ON `UserProfile`(`name`);
@@ -104,3 +113,4 @@ CREATE INDEX `postUserAndData` ON `Post`(`user`,`date`);
 create index `postRootAndTreadAndData` on `Post`(`thread`,`date`,`root`);
 CREATE INDEX `postForumAndDate` ON `Post`(`forum`,`date`);
 CREATE INDEX `threadForumAndDate` ON `Thread`(`forum`,`date`);
+CREATE INDEX `Tud` ON `Thread`(`user`,`date`);

@@ -1,1 +1,0 @@
-CREATE INDEX `Tud` ON `Thread`(`user`,`date`);
