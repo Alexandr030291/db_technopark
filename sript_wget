@@ -1,3 +1,4 @@
+#!/bin/bash
 URL=https://cloud.mail.ru/public/3bJs/UqhpdB8o3
 FILENAME=dump.sql.tar.gz
 URLPART0=$(wget --quiet -O - $URL | grep -o '"weblink_get":\[[^]]\+\]' | sed 's/.*"url":"\([^"]\+\)".*/\1/')
