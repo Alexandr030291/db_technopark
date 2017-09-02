@@ -1,0 +1,22 @@
+sudo apt-get install software-properties-common python-software-properties
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install default-jre
+sudo apt-get install oracle-java8-installer
+sudo apt-get install maven
+sudo apt-get install git
+sudo apt-get install wget
+sudo apt-get install mysql-server
+	
+	create database technopark;
+	create user 'TestDB'@'localhost' identified by 'qweasD#123';
+	grant all privileges on technopark. * to 'TestDB'@'localhost';
+	exit;
+
+git clone git://github.com/Alexandr030291/db_technopark.git
+cd /db_technopark
+. script_wget 
+
+tar xvfz dump.sql.tar.gz
+
+mysql -uroot -p technopark <  dump.sql
