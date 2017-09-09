@@ -1,5 +1,7 @@
 package org.ebitbucket.main;
 
+import org.ebitbucket.model.Rps;
+
 @SuppressWarnings("unused")
 public final class Result {
     public static final int OK = 0;
@@ -13,6 +15,7 @@ public final class Result {
     private final Object response;
 
     public Result(int code, Object response) {
+        Rps.setRps();
         this.code = code;
         this.response = response;
     }

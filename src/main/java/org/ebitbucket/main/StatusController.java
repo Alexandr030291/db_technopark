@@ -1,5 +1,6 @@
 package org.ebitbucket.main;
 
+import org.ebitbucket.model.Rps;
 import org.ebitbucket.services.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,5 +26,10 @@ public class StatusController extends MainController{
         int forum = getForumService().getCount();
         int post = getPostService().getCount();
         return ResponseEntity.ok(Result.ok(new StatusResponse(user,thread,forum,post)));
+    }
+
+    @RequestMapping(path = "db/api/rps", method = RequestMethod.GET)
+    public ResponseEntity rpsInfo() {
+        return ResponseEntity.ok(Result.ok(Rps.getRps()));
     }
 }
