@@ -30,6 +30,6 @@ public class StatusController extends MainController{
 
     @RequestMapping(path = "db/api/rps", method = RequestMethod.GET)
     public ResponseEntity rpsInfo() {
-        return ResponseEntity.ok(Result.ok(Rps.getRps()));
+        return ResponseEntity.ok().body(Rps.getRps());
     }
 }
