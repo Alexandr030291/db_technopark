@@ -15,8 +15,13 @@ sudo apt-get install mysql-server
 
 git clone git://github.com/Alexandr030291/db_technopark.git
 cd /db_technopark
+mvn install
 . script_wget 
 
 tar xvfz dump.sql.tar.gz
 
 mysql -uroot -p technopark <  dump.sql
+
+cd target/
+
+nohup java -jar db_technopark-0.0.1-SNAPSHOT.jar >log.txt 2> errors.txt < /dev/null &
